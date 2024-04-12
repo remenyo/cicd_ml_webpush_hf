@@ -2,27 +2,25 @@ name: Docker Image CI CD action
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker buildx build . --file Dockerfile --progress plain -o build
-    - name: Rename files
-      run: datetime=$(TZ=Europe/Budapest date -Iseconds); for file in ./build/*.pdf; do mv "$file" "${file%.pdf}"_$datetime.pdf; done
-    - name: Upload binaries to release
-      uses: xresloader/upload-to-github-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        file: "build/*.pdf"
-        prerelease: false
-        draft: false
+      - uses: actions/checkout@v3
+      - name: Build the Docker image
+        run: docker buildx build . --file Dockerfile --progress plain -o build
+      - name: Rename files
+        run: datetime=$(TZ=Europe/Budapest date -Iseconds); for file in ./build/*.pdf; do mv "$file" "${file%.pdf}"_$datetime.pdf; done
+      - name: Upload binaries to release
+        uses: xresloader/upload-to-github-release@v1.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: "build/*.pdf"
+          prerelease: false
+          draft: false

@@ -25,7 +25,7 @@ RUN gem install asciidoctor-diagram
 
 RUN gem install hexapdf rouge --no-document
 
-RUN npm install -g vega-cli vega-lite
+# RUN npm install -g vega-cli vega-lite
 
 COPY ./  ./
 
@@ -34,12 +34,12 @@ ENV ASCIIDOCTOR_PARAMS \
 	-v \
 	-a lang=hu \
 	-r asciidoctor-diagram \
-	-a vegalite=/usr/lib/node_modules/vega-lite/bin/vl2vg \
-	-a ditaa-shadows=false \
-	# -a ditaa-antialias=false \
-	-a ditaa-separation=false \
-	-a vegalite=/usr/lib/node_modules/vega-lite/bin/vl2vg \
-	-a vg2svg=/usr/lib/node_modules/vega-cli/bin/vg2svg \
+	# -a vegalite=/usr/lib/node_modules/vega-lite/bin/vl2vg \
+	# -a ditaa-shadows=false \
+	# # -a ditaa-antialias=false \
+	# -a ditaa-separation=false \
+	# -a vegalite=/usr/lib/node_modules/vega-lite/bin/vl2vg \
+	# -a vg2svg=/usr/lib/node_modules/vega-cli/bin/vg2svg \
 	# -a allow-uri-read \
 	# allow-uri-read is for kroki
 	\
