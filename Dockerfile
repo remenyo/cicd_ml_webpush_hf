@@ -25,6 +25,8 @@ RUN gem install asciidoctor-diagram
 
 RUN gem install hexapdf rouge --no-document
 
+RUN npm install -g @mermaid-js/mermaid-cli
+
 # RUN npm install -g vega-cli vega-lite
 
 COPY ./  ./
@@ -34,6 +36,7 @@ ENV ASCIIDOCTOR_PARAMS \
 	-v \
 	-a lang=hu \
 	-r asciidoctor-diagram \
+	-a mmdc=/usr/lib/node_modules/mermaid-cli/bin/mmdc \
 	# -a vegalite=/usr/lib/node_modules/vega-lite/bin/vl2vg \
 	# -a ditaa-shadows=false \
 	# # -a ditaa-antialias=false \
