@@ -70,7 +70,7 @@ Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: [https://web.d
 
 ## Megvalósítás
 
-=== CI/CD rendszer
+=== 1. CI/CD rendszer
 
 Források:
 
