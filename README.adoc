@@ -44,7 +44,7 @@ Ez a dokumentum meghatározza a webszolgáltatás fejlesztése során használt 
   - Képeken autó alakú objektumok bekeretezése, opcionálisan címkézése
   - "Keretezett" képek mentése fájlrendszerbe.
 
-Megjegyzés: Egy potenciális megoldást mutat be ez a blogpost: [https://dev.to/andreygermanov/how-to-create-yolov8-based-object-detection-web-service-using-python-julia-nodejs-javascript-go-and-rust-4o8e](https://dev.to/andreygermanov/how-to-create-yolov8-based-object-detection-web-service-using-python-julia-nodejs-javascript-go-and-rust-4o8e)
+Megjegyzés: Egy potenciális megoldást mutat be ez a blogpost: (https://dev.to/andreygermanov/how-to-create-yolov8-based-object-detection-web-service-using-python-julia-nodejs-javascript-go-and-rust-4o8e)
 
 === 4. Üzenőrendszer
 
@@ -53,7 +53,7 @@ Megjegyzés: Egy potenciális megoldást mutat be ez a blogpost: [https://dev.to
   - Feliratkozók nyilvántartása (fájlrendszerben tárolt lista segítségével)
   - Belső esemény (feltöltés és felismerés) hatására az összes feliratkozó értesítése új feltöltésről
 
-Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: [https://web.dev/articles/sending-messages-with-web-push-libraries](https://web.dev/articles/sending-messages-with-web-push-libraries)
+Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: (https://web.dev/articles/sending-messages-with-web-push-libraries)
 
 === 5. CI/CD rendszer
 
@@ -61,10 +61,10 @@ Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: [https://web.d
 - **Funckionalitás**:
   - A feltöltött forráskódból docker imagek előállítása
   - Imagek feltöltése a GitHub(vagy DockerHub) Container Registry-be
-    - Ennek a megoldásáról szól ez a bejegyzés: [https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token](https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
+    - Ennek a megoldásáról szól ez a bejegyzés: (https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
   - Egy távoli szerveren futó docker compose példány utasítása, hogy töltse le az összes új image-t, és frissítse a futó konténereit az új verziókkal.
-    - Ennek a megoldásáról szól ez a bejegyzés: [https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/](https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
-  - Ez pedig Github Actions specifikus: [https://github.com/marketplace/actions/docker-compose-remote-deploy](https://github.com/marketplace/actions/docker-compose-remote-deploy)
+    - Ennek a megoldásáról szól ez a bejegyzés: (https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
+  - Ez pedig Github Actions specifikus: (https://github.com/marketplace/actions/docker-compose-remote-deploy)
 
 ---
 
@@ -74,10 +74,13 @@ Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: [https://web.d
 
 Források:
 
-- [How to deploy on remote Docker hosts with docker-compose](https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
-- [Docker Compose Remote Action](https://github.com/marketplace/actions/docker-compose-remote-deploy)
-- [Publishing and installing a package with GitHub Actions](https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
+- How to deploy on remote Docker hosts with docker-compose (https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
+- Docker Compose Remote Action (https://github.com/marketplace/actions/docker-compose-remote-deploy)
+- Publishing and installing a package with GitHub Actions (https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
 
+(https://kroki.io/mermaid/svg/eNp9VE1LxDAQvfsr5ljRLuixyIJfKHgQBM9LmsymwTapmUTx3ztp0t2uq_YS6Lx5782bpoTvEa3EOyO0F8MJ8CNkcB4iCIJXQj-9G4UPRppR2AAiVR5MeIwtXMtgnKUjDCXMC46ODJN9AaH0GI5xbcLdRNOrQgXVnZNv6E-PoLrIdix762wQxqJnDW0osEKlO_lLl0pdmZK7BjaE3DO4gEXwqMNn6xOkcxRmR3BvNUvC2cyTxWJdr9dnooExUgedGEe0qHKQqdI20E7zhQ7BDEJjTqHlYs1tz097LDXwgDwpT8KWiD6dz0xUwFdXB7X1et-rG-gdG6wOENmj_kWrLY5_WEo8xCvDKhcWBO2O4B_vfhEcr1yhDUb09GOKP1DLeVQD0tmt0dHjJuM3CV_JnP7qSwz9-V962bZKRH4O5l-oZ6jaTZQauU_lxRdFiCPUCuotLC3M3890zkz1nmqmW-Zl1QE6Za4xbHLiOfiL8-m4XK1WpzvwtAafAszQkld6bBrNfbBbrnvX9y4GsPgJ_IrSFQXHvjthNaoUbL4-eS9Y_Ow52Gu5jltjDXXlg1bI_wbzIRgmvgHjW0s1)
+
+(később belekerül a diagram renderelés is, addigis a linken látható a képe az alábbi szekvenciadiagramnak ami megmondja hogy hogyan fog lefutni a CICD folyamat:)
 [source,mermaid]
 ----
 sequenceDiagram
