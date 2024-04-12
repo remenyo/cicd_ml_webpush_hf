@@ -17,10 +17,6 @@ jobs:
       - name: Rename files
         run: datetime=$(TZ=Europe/Budapest date -Iseconds); for file in ./build/*.pdf; do mv "$file" "${file%.pdf}"_$datetime.pdf; done
       - name: Upload binaries to release
-        uses: xresloader/upload-to-github-release@v1.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          file: "build/*.pdf"
-          prerelease: false
-          draft: false
+          file: "build/documentation.pdf"
