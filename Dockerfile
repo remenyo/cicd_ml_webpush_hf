@@ -1,10 +1,50 @@
 # build with this command:
 # docker build . --file Dockerfile --progress plain -o build
 
-FROM ruby:latest as base
+FROM ruby:3.3 as base
 
 RUN apt-get update
-RUN apt-get install -y curl unzip libgmp-dev default-jre libgbm-dev
+RUN apt-get install -y curl unzip
+RUN apt-get install -y libgmp-dev default-jre
+
+# for chrome -> for pupeteer -> for mermaid
+RUN apt-get install -y libgbm-dev \
+	ca-certificates \
+	fonts-liberation \
+	libasound2 \
+	libatk-bridge2.0-0 \
+	libatk1.0-0 \
+	libc6 \
+	libcairo2 \
+	libcups2 \
+	libdbus-1-3 \
+	libexpat1 \
+	libfontconfig1 \
+	libgbm1 \
+	libgcc1 \
+	libglib2.0-0 \
+	libgtk-3-0 \
+	libnspr4 \
+	libnss3 \
+	libpango-1.0-0 \
+	libpangocairo-1.0-0 \
+	libstdc++6 \
+	libx11-6 \
+	libx11-xcb1 \
+	libxcb1 \
+	libxcomposite1 \
+	libxcursor1 \
+	libxdamage1 \
+	libxext6 \
+	libxfixes3 \
+	libxi6 \
+	libxrandr2 \
+	libxrender1 \
+	libxss1 \
+	libxtst6 \
+	lsb-release \
+	wget \
+	xdg-utils
 
 RUN apt-get remove nodejs
 RUN rm -rf /usr/local/bin/node*
@@ -26,8 +66,6 @@ RUN gem install hexapdf rouge --no-document
 
 RUN npm install -g @mermaid-js/mermaid-cli
 
-# RUN npm install -g vega-cli vega-lite
-
 COPY ./  ./
 
 ARG ASCIIDOCTOR_PARAMS
@@ -35,45 +73,20 @@ ENV ASCIIDOCTOR_PARAMS \
 	-v \
 	-a lang=hu \
 	-r asciidoctor-diagram \
-	-a mmdc=/usr/lib/node_modules/mermaid-cli/bin/mmdc \
-	# -a vegalite=/usr/lib/node_modules/vega-lite/bin/vl2vg \
-	# -a ditaa-shadows=false \
-	# # -a ditaa-antialias=false \
-	# -a ditaa-separation=false \
-	# -a vegalite=/usr/lib/node_modules/vega-lite/bin/vl2vg \
-	# -a vg2svg=/usr/lib/node_modules/vega-cli/bin/vg2svg \
-	# -a allow-uri-read \
-	# allow-uri-read is for kroki
-	\
 	-a toc-title=Tartalomjegyzék \
 	-a figure-caption=ábra: \
 	-a table-caption=táblázat: \
-	# -r ./resources/scripts/remove_trailing_numbering.rb \
-	# -r ./resources/scripts/AvoidBreakAfterSectionTitle.rb \
 	-a toc=macro \
 	-a toclevels=4 \
 	-a sectnumlevels=4 \
 	-a imagesdir=./resources/images \
-	\
-	# -r asciidoctor-bibtex \
-	# -a bibtex-throw=true \
-	# -a bibtex-file=./resources/refs.bib \
-	# -a bibtex-locale=hu-HU \
-	# -a bibtex-style=ieee \
-	# -a bibtex-order=appearance \
-	\
 	-r asciidoctor-pdf \
 	-b pdf \
-	# -a pdf-theme=bme \
-	# -a pdf-themesdir=./resources/themes \
-	# -a pdf-fontsdir=./resources/fonts \
 	-a media=prepress \
 	-a source-highlighter=rouge
-#-a rouge-style=monokai \
 
 RUN asciidoctor README.adoc $ASCIIDOCTOR_PARAMS -o /documentation.pdf
 
-
-FROM scratch AS szakdolgozat-pdf-export-stage
+FROM scratch AS pdf-export-stage
 
 COPY --from=base ./documentation.pdf .
