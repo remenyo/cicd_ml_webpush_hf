@@ -3,6 +3,9 @@
 
 FROM ruby:3.3 as base
 
+# enable sandbox for chrome
+RUN sysctl -w kernel.unprivileged_userns_clone=1
+
 RUN apt-get update
 RUN apt-get install -y curl unzip
 RUN apt-get install -y libgmp-dev default-jre
