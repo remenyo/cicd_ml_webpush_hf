@@ -95,5 +95,36 @@ Az actions yaml ami kirendereli ezt a dokumentumot és release-be teszi a PDF-et
 
 [source,yaml]
 ....
-include::.github\workflows\docker-image.yml[]
+name: Docker Image CI CD action
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /var/lib/docker
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+
+      - name: Build the Docker image
+        run: docker buildx build . --file Dockerfile --progress plain -o build
+
+      - name: Rename files
+        run: datetime=$(TZ=Europe/Budapest date -Iseconds); for file in ./build/*.pdf; do mv "$file" "${file%.pdf}"_$datetime.pdf; done
+
+      - name: Save documentation artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: documentation
+          path: documentation.pdf
 ....
