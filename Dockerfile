@@ -12,7 +12,7 @@ RUN rm -rf /usr/local/bin/node*
 RUN rm -rf /usr/local/bin/npm*
 RUN rm -rf /etc/apt/sources.list.d/nodesource.list
 
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash
+RUN curl -fsSL https://deb.nodesource.com/setup_21.x | bash
 RUN apt-get install -y nodejs
 
 RUN node --version

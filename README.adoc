@@ -78,78 +78,22 @@ Források:
 - Docker Compose Remote Action (https://github.com/marketplace/actions/docker-compose-remote-deploy)
 - Publishing and installing a package with GitHub Actions (https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
 
-(https://kroki.io/mermaid/svg/eNp9VE1LxDAQvfsr5ljRLuixyIJfKHgQBM9LmsymwTapmUTx3ztp0t2uq_YS6Lx5782bpoTvEa3EOyO0F8MJ8CNkcB4iCIJXQj-9G4UPRppR2AAiVR5MeIwtXMtgnKUjDCXMC46ODJN9AaH0GI5xbcLdRNOrQgXVnZNv6E-PoLrIdix762wQxqJnDW0osEKlO_lLl0pdmZK7BjaE3DO4gEXwqMNn6xOkcxRmR3BvNUvC2cyTxWJdr9dnooExUgedGEe0qHKQqdI20E7zhQ7BDEJjTqHlYs1tz097LDXwgDwpT8KWiD6dz0xUwFdXB7X1et-rG-gdG6wOENmj_kWrLY5_WEo8xCvDKhcWBO2O4B_vfhEcr1yhDUb09GOKP1DLeVQD0tmt0dHjJuM3CV_JnP7qSwz9-V962bZKRH4O5l-oZ6jaTZQauU_lxRdFiCPUCuotLC3M3890zkz1nmqmW-Zl1QE6Za4xbHLiOfiL8-m4XK1WpzvwtAafAszQkld6bBrNfbBbrnvX9y4GsPgJ_IrSFQXHvjthNaoUbL4-eS9Y_Ow52Gu5jltjDXXlg1bI_wbzIRgmvgHjW0s1)
+Az alábbi szekvenciadiagramn bemutatja hogy hogyan fog lefutni a végső CICD folyamat:
+[mermaid]
+....
+include::cicd_sequencediagram.mermaid[]
+....
 
-(később belekerül a diagram renderelés is, addigis a linken látható a képe az alábbi szekvenciadiagramnak ami megmondja hogy hogyan fog lefutni a CICD folyamat:)
-[source,mermaid]
-----
-sequenceDiagram
-    actor u as User
-    participant a as GitHub Actions
-    participant s as Repository secrets
-    participant b as Build Action (Docker)
-    participant g as Github Container Registry (ghcr)
-    participant d as Docker Compose Remote Action
-    participant r as Remote host (Docker Engine + Compose)
-    u-->>+a: push happened
-    a->>+b: build the images
-    b->>-a: OK
-    a->>+s: Get ghcr password
-    s->>-a: <<ghcr password>>
-    a->>+g: login(ghcr password)
-    g->>-a: OK
-    a->>+b: push images
-    b->>+g: store(images)
-    g->>-b: OK
-    b->>-a: OK
-    a->>+s: Get remote host credentials
-    s->>-a: <<remote host credentials>>
-    a->>+d: configure_remote_host(compose.yaml, remote host credentials)
-    d->>+r: login(remote host credentials)
-    r->>d: OK
-    d->>r: docker compose up -d -f compose.yaml
-    par
-        r->>-d: OK
-        d->>-a: OK
-    and
-        r->>+g: get_images(image1,image2...)
-        g->>-r: <<images>>
-        note over r: rollout new versions of changed containers
-    end
-    note over a: Action finished
-    deactivate a
-----
+A renderer dockerfile asciidoctort használ. Ezt alkalmaztam a szakdolgozatomban, ezért volt könnyű választás ezt a "buildscriptet" megtartani. (egy bő részét így is át kellett írni.)
 
-Az actions yaml ami kirendereli ezt a dokumentumot:
+[source,dockerfile]
+....
+include::Dockerfile[]
+....
+
+Az actions yaml ami kirendereli ezt a dokumentumot és release-be teszi a PDF-et:
 
 [source,yaml]
-----
-name: Docker Image CI CD action
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-jobs:
-
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker buildx build . --file Dockerfile --progress plain -o build
-    - name: Rename files
-      run: datetime=$(TZ=Europe/Budapest date -Iseconds); for file in ./build/*.pdf; do mv "$file" "${file%.pdf}"_$datetime.pdf; done
-    - name: Upload binaries to release
-      uses: xresloader/upload-to-github-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        file: "build/*.pdf"
-        prerelease: false
-        draft: false
-----
+....
+include::.github\workflows\docker-image.yml[]
+....
