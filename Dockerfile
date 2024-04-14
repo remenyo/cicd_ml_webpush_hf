@@ -3,9 +3,6 @@
 
 FROM ruby:3.3 as base
 
-# enable sandbox for chrome
-RUN sudo sysctl -w kernel.unprivileged_userns_clone=1
-
 RUN apt-get update
 RUN apt-get install -y curl unzip
 RUN apt-get install -y libgmp-dev default-jre
@@ -68,6 +65,45 @@ RUN gem install asciidoctor-diagram
 RUN gem install hexapdf rouge --no-document
 
 RUN npm install -g @mermaid-js/mermaid-cli
+
+# --- pupeteer patch
+
+# Rename original mmdc to mmdc-original
+RUN mv /usr/local/bin/mmdc /usr/local/bin/mmdc-original
+
+# Create a new mmdc script
+RUN cat << 'EOF' > /usr/local/bin/mmdc \
+	#!/usr/bin/env bash \
+	# Default JSON configuration \
+	DEFAULT_CONFIG='{"args":["--no-sandbox"]}' \
+	\
+	# Check if a config file is provided in the command-line arguments \
+	for arg in "\$@"; do \
+	if [[ "\$arg" == -p=* ]]; then \
+	CONFIG_FILE=\${arg#-p=} \
+	if [ -f "\$CONFIG_FILE" ]; then \
+	# Load the existing JSON config and add "--no-sandbox" argument \
+	jq '.args += ["--no-sandbox"]' "\$CONFIG_FILE" > /tmp/modified_puppeteer_config.json \
+	CONFIG_ARG="-p /tmp/modified_puppeteer_config.json" \
+	break \
+	fi \
+	fi \
+	done \
+	\
+	# Use modified config file if it exists, otherwise use default config \
+	if [ -z "\$CONFIG_ARG" ]; then \
+	echo "\$DEFAULT_CONFIG" > /tmp/default_puppeteer_config.json \
+	CONFIG_ARG="-p /tmp/default_puppeteer_config.json" \
+	fi \
+	\
+	# Call the original mmdc with the new or modified JSON config \
+	/usr/local/bin/mmdc-original \$CONFIG_ARG "\$@" \
+	EOF
+
+# Make the new mmdc script executable
+RUN chmod +x /usr/local/bin/mmdc
+
+# --- pupeteer patch end
 
 COPY ./  ./
 
