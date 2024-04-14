@@ -12,15 +12,30 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /var/lib/docker
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+
       - name: Build the Docker image
         run: docker buildx build . --file Dockerfile --progress plain -o build
+
       - name: Rename files
         run: datetime=$(TZ=Europe/Budapest date -Iseconds); for file in ./build/*.pdf; do mv "$file" "${file%.pdf}"_$datetime.pdf; done
-      - name: Upload binaries to release
-        uses: xresloader/upload-to-github-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Save documentation artifact
+        uses: actions/upload-artifact@v2
         with:
-          file: "build/*.pdf"
-          prerelease: false
-          draft: false
+          name: documentation
+          path: documentation.pdf
+
+      # - name: Upload binaries to release
+      #   uses: xresloader/upload-to-github-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     file: "build/*.pdf"
+      #     prerelease: false
+      #     draft: false

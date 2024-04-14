@@ -4,8 +4,7 @@
 FROM ruby:latest as base
 
 RUN apt-get update
-RUN apt-get install -y curl unzip
-RUN apt-get install -y libgmp-dev default-jre
+RUN apt-get install -y curl unzip libgmp-dev default-jre libgbm-dev
 
 RUN apt-get remove nodejs
 RUN rm -rf /usr/local/bin/node*
