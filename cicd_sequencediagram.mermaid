@@ -6,6 +6,7 @@ sequenceDiagram
     participant g as Github Container Registry (ghcr)
     participant d as Docker Compose Remote Action
     participant r as Remote host (Docker Engine + Compose)
+    activate r
     u-->>+a: push happened
     a->>+b: build the images
     b->>-a: OK
@@ -29,7 +30,8 @@ sequenceDiagram
     and
         r->>+g: get_images(image1,image2...)
         g->>-r: <<images>>
-        note over r: rollout new versions of changed containers
+        note over r: rollout new<br>versions of changed containers
     end
     note over a: Action finished
     deactivate a
+    deactivate r

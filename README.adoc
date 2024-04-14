@@ -1,20 +1,25 @@
 = Felhők hálózati szolgáltatásai laboratórium - BMEVITMMB11-HU
-:toc:
-Házi feladat
 
-Remény Olivér - IEY82F - 2024.04.12.
 
-== Áttekintés
+Házi feladat - Remény Olivér - IEY82F - 2024.04.14.
 
-Ez a feladat
 
-- Egy webes felület létrehozásából áll, amely lehetővé tesz képek feltöltését leírásokkal együtt,
-- Egy olyan rendszer kialakításából ami tárolja a képeket leírásaikkal együtt
+== Áttekintés, specifikáció
+
+Ez a feladat az alábbi részekból áll:
+
+- Egy webes felület létrehozása, amely lehetővé tesz képek feltöltését leírásokkal együtt,
+- Egy olyan rendszer kialakítása ami tárolja a képeket leírásaikkal együtt
 - Egy olyan program integrálása a feltöltés folyamatába ami felismeri az autó alakú dolgokat a feltöltött képen, bekeretezi azokat és visszatér a felismert autó alakú objektumok számával
-- Egy üzenőrendszerből, ami az összes feliratkozót értesíti az összes feltöltési eseményről, a feldolgozás eredményével együtt.
-- Egy CI/CD folyamat összerakásáról szól, ami az előbb felsorolt szolgáltatásokat célszerűen lefordítja, és elindítja egy szerveren.
+- Egy üzenő rendszerből, ami az összes feliratkozót értesíti az összes feltöltési eseményről, a feldolgozás eredményével együtt.
+- Egy CI/CD folyamat megírásából, ami az előbb felsorolt szolgáltatásokat célszerűen lefordítja, és elindítja egy szerveren.
 
 Ez a dokumentum meghatározza a webszolgáltatás fejlesztése során használt architektúrális komponenseket, technológiákat és folyamatokat.
+
+toc::[]
+
+// pagebreak
+<<<
 
 === 1. Felhasználói felület (UI)
 
@@ -66,7 +71,8 @@ Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: (https://web.d
     - Ennek a megoldásáról szól ez a bejegyzés: (https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
   - Ez pedig Github Actions specifikus: (https://github.com/marketplace/actions/docker-compose-remote-deploy)
 
----
+// pagebreak
+<<<
 
 ## Megvalósítás
 
@@ -79,12 +85,14 @@ Források:
 - Publishing and installing a package with GitHub Actions (https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
 
 Az alábbi szekvenciadiagramn bemutatja hogy hogyan fog lefutni a végső CICD folyamat:
-[mermaid]
+[mermaid, width=3500]
 ....
 include::cicd_sequencediagram.mermaid[]
 ....
+{counter:figure}. {figure-caption} CI/CD folyamat várható szekvenciadiája
 
-A renderer dockerfile asciidoctort használ. Ezt alkalmaztam a szakdolgozatomban, ezért volt könnyű választás ezt a "buildscriptet" megtartani. (egy bő részét így is át kellett írni.)
+
+A renderer dockerfile asciidoctort használ. Ezt a technológiát alkalmaztam a szakdolgozatomban, és az a tervem hogy így fogom megírni a diplomatervem is.
 
 [source,dockerfile]
 ....
@@ -130,5 +138,8 @@ jobs:
           file: "build/*.pdf"
           prerelease: false
           draft: false
-
 ....
+
+A dokumentációs PDF-et a releases fülön látjuk a kezdőlapon:
+
+image::release_mainpage.png[title="PDF release" caption="{counter2:figure}{counter:figure}. {figure-caption} "]

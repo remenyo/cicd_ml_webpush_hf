@@ -7,7 +7,7 @@ RUN apt-get update
 RUN apt-get install -y curl unzip
 RUN apt-get install -y libgmp-dev default-jre
 
-# for chrome -> for pupeteer -> for mermaid
+# for chrome -> for puppeteer -> for mermaid
 RUN apt-get install -y libgbm-dev \
 	ca-certificates \
 	fonts-liberation \
@@ -66,7 +66,7 @@ RUN gem install hexapdf rouge --no-document
 
 RUN npm install -g @mermaid-js/mermaid-cli
 
-# --- pupeteer patch
+# --- puppeteer patch
 
 # Rename original mmdc to mmdc-original
 RUN mv /usr/bin/mmdc /usr/bin/mmdc-original
@@ -103,6 +103,7 @@ ENV ASCIIDOCTOR_PARAMS \
 	-v \
 	-a lang=hu \
 	-r asciidoctor-diagram \
+	-a mmdc=/usr/bin/mmdc \
 	-a toc-title=Tartalomjegyzék \
 	-a figure-caption=ábra: \
 	-a table-caption=táblázat: \
