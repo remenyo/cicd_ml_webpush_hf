@@ -72,33 +72,24 @@ RUN npm install -g @mermaid-js/mermaid-cli
 RUN mv /usr/bin/mmdc /usr/bin/mmdc-original
 
 # Create a new mmdc script
-RUN cat << 'EOF' > /usr/bin/mmdc \
-	#!/usr/bin/env bash \
-	# Default JSON configuration \
-	DEFAULT_CONFIG='{"args":["--no-sandbox"]}' \
-	\
-	# Check if a config file is provided in the command-line arguments \
-	for arg in "\$@"; do \
-	if [[ "\$arg" == -p=* ]]; then \
-	CONFIG_FILE=\${arg#-p=} \
-	if [ -f "\$CONFIG_FILE" ]; then \
-	# Load the existing JSON config and add "--no-sandbox" argument \
-	jq '.args += ["--no-sandbox"]' "\$CONFIG_FILE" > /tmp/modified_puppeteer_config.json \
-	CONFIG_ARG="-p /tmp/modified_puppeteer_config.json" \
-	break \
-	fi \
-	fi \
-	done \
-	\
-	# Use modified config file if it exists, otherwise use default config \
-	if [ -z "\$CONFIG_ARG" ]; then \
-	echo "\$DEFAULT_CONFIG" > /tmp/default_puppeteer_config.json \
-	CONFIG_ARG="-p /tmp/default_puppeteer_config.json" \
-	fi \
-	\
-	# Call the original mmdc with the new or modified JSON config \
-	/usr/bin/mmdc-original \$CONFIG_ARG "\$@" \
-	EOF
+RUN echo '#!/usr/bin/env bash' > /usr/local/bin/mmdc && \
+	echo 'DEFAULT_CONFIG='"'"'{"args":["--no-sandbox"]}'"'"'' >> /usr/local/bin/mmdc && \
+	echo 'for arg in "$@"; do' >> /usr/local/bin/mmdc && \
+	echo '  if [[ "$arg" == -p=* ]]; then' >> /usr/local/bin/mmdc && \
+	echo '    CONFIG_FILE=${arg#-p=}' >> /usr/local/bin/mmdc && \
+	echo '    if [ -f "$CONFIG_FILE" ]; then' >> /usr/local/bin/mmdc && \
+	echo '      jq ".args += [\"--no-sandbox\"]" "$CONFIG_FILE" > /tmp/modified_puppeteer_config.json' >> /usr/local/bin/mmdc && \
+	echo '      CONFIG_ARG="-p /tmp/modified_puppeteer_config.json"' >> /usr/local/bin/mmdc && \
+	echo '      break' >> /usr/local/bin/mmdc && \
+	echo '    fi' >> /usr/local/bin/mmdc && \
+	echo '  fi' >> /usr/local/bin/mmdc && \
+	echo 'done' >> /usr/local/bin/mmdc && \
+	echo 'if [ -z "$CONFIG_ARG"]; then' >> /usr/local/bin/mmdc && \
+	echo '  echo "$DEFAULT_CONFIG" > /tmp/default_puppeteer_config.json' >> /usr/local/bin/mmdc && \
+	echo '  CONFIG_ARG="-p /tmp/default_puppeteer_config.json"' >> /usr/local/bin/mmdc && \
+	echo 'fi' >> /usr/local/bin/mmdc && \
+	echo '/usr/local/bin/mmdc-original $CONFIG_ARG "$@"' >> /usr/local/bin/mmdc && \
+	chmod +x /usr/local/bin/mmdc
 
 # Make the new mmdc script executable
 RUN chmod +x /usr/bin/mmdc
