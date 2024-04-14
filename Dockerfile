@@ -69,10 +69,10 @@ RUN npm install -g @mermaid-js/mermaid-cli
 # --- pupeteer patch
 
 # Rename original mmdc to mmdc-original
-RUN mv /usr/local/bin/mmdc /usr/local/bin/mmdc-original
+RUN mv /usr/bin/mmdc /usr/bin/mmdc-original
 
 # Create a new mmdc script
-RUN cat << 'EOF' > /usr/local/bin/mmdc \
+RUN cat << 'EOF' > /usr/bin/mmdc \
 	#!/usr/bin/env bash \
 	# Default JSON configuration \
 	DEFAULT_CONFIG='{"args":["--no-sandbox"]}' \
@@ -97,11 +97,11 @@ RUN cat << 'EOF' > /usr/local/bin/mmdc \
 	fi \
 	\
 	# Call the original mmdc with the new or modified JSON config \
-	/usr/local/bin/mmdc-original \$CONFIG_ARG "\$@" \
+	/usr/bin/mmdc-original \$CONFIG_ARG "\$@" \
 	EOF
 
 # Make the new mmdc script executable
-RUN chmod +x /usr/local/bin/mmdc
+RUN chmod +x /usr/bin/mmdc
 
 # --- pupeteer patch end
 
