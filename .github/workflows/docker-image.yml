@@ -16,11 +16,11 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
-          path: /var/lib/docker
-          key: ${{ runner.os }}-docker-${{ github.sha }}
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
 
       - name: Build the Docker image
-        run: docker buildx build . --file Dockerfile --progress plain -o build
+        run: docker buildx build . --file Dockerfile --progress plain -o build --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
 
       - name: Rename files
         run: datetime=$(TZ=Europe/Budapest date -Iseconds); for file in ./build/*.pdf; do mv "$file" "${file%.pdf}"_$datetime.pdf; done
