@@ -25,17 +25,11 @@ jobs:
       - name: Rename files
         run: datetime=$(TZ=Europe/Budapest date -Iseconds); for file in ./build/*.pdf; do mv "$file" "${file%.pdf}"_$datetime.pdf; done
 
-      - name: Save documentation artifact
-        uses: actions/upload-artifact@v2
+      - name: Upload binaries to release
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: documentation
-          path: documentation.pdf
-
-      # - name: Upload binaries to release
-      #   uses: xresloader/upload-to-github-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     file: "build/*.pdf"
-      #     prerelease: false
-      #     draft: false
+          file: "build/*.pdf"
+          prerelease: false
+          draft: false
