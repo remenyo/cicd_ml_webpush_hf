@@ -142,4 +142,4 @@ jobs:
 
 A dokumentációs PDF-et a releases fülön látjuk a kezdőlapon:
 
-image::release_mainpage.png[title="PDF release" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::release_mainpage.png[title="A github repo főoldala, jobb oldalt a releases ablakban az aktuális dokumentáció PDF" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
