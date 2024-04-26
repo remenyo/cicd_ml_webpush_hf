@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 jobs:
-  build:
+  build-doc:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,7 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
 
       - name: Build the Docker image
-        run: docker buildx build ./doc --file Dockerfile --progress plain -o doc_build --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
+        run: docker buildx build ./doc --file ./doc/Dockerfile --progress plain -o doc_build --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
 
       - name: Rename files
         run: datetime=$(TZ=Europe/Budapest date -Iseconds); for file in ./doc_build/*.pdf; do mv "$file" "${file%.pdf}"_$datetime.pdf; done
