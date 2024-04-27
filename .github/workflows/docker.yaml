@@ -19,6 +19,7 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
+          save-always: true
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
 
@@ -40,7 +41,7 @@ jobs:
         run: docker buildx build ./frontend --file ./frontend/Dockerfile -o ./frontend/dist --progress plain --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
 
       - name: Copy frontend into webpage-host
-        run: cp ./frontend/dist ./backend/webpage-host/public
+        run: cp -r ./frontend/dist ./backend/webpage-host/public
       
       - name: Build webpage-host
         run: docker buildx build ./backend/webpage-host --file ./backend/webpage-host/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/webpage-host:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
