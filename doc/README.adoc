@@ -76,7 +76,45 @@ Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: (https://web.d
 
 ## Megvalósítás
 
-=== 1. CI/CD rendszer
+=== 1. Frontend
+
+A frontend egy VueJS 3 single page web application. Az SPA csak annyit jelent hogy minden path (/images is) az index.html betöltését eredményezi, ami aztán javascriptből kiolvassa a path-et, és annak függvényében módosítja a kinézetét, funkcionalitását.
+
+- A `/`-n elérhető a feltöltés és a feliratkozás funckció,
+- A `/image/{id}`-n pedig a feltöltött kép leírással és a detekció eredménye látható.
+
+A kiszolgáló egy egyszerű NodeJS Express szerver:
+
+[source,javascript]
+....
+include::../backend/webpage-host/index.js[]
+....
+
+=== 2. Backend
+
+A backend az alábbi részekből áll:
+
+- webpage-host: weboldalt kiszolgáló rendszer (kész)
+- gateway: a weboldal és az alábbi szolgáltatások közötti közvetítő (WIP)
+  - file-store: képek mentése és letöltése (kész, egyelőre ebben van a gateway kód is)
+  - image-processor: autó alakú objektumok felismerése (kész, csak gagyi, opencv haar cascade car detection)
+  - subscription-handler: feliratkozást kezelő rendszer (WIP)
+
+Minden szolgáltatás a 3000-es porton érhető el alapértelmezetten, de a működés során minimum két port szükséges, mert nem a "backend" szolgálja ki a frontendet jelenleg.
+
+A webpage-host 80-as porton szolgál ki.
+A file store a 3000-es porton érhető majd el.
+Az image processornak nem kell kifelé elérhetőnek lennie így szintén a 3000-es porton működik alapból.
+
+==== Docker
+
+Minden szolgáltatás egy-egy docker image.
+
+==== Compose
+
+A docker image-ket a docker compose futtatja és tartja karban.
+
+=== 3. CI/CD rendszer
 
 Források:
 

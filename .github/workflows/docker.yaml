@@ -1,0 +1,67 @@
+name: Docker Image CI/CD
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build and push backend services (adjust names and paths as needed)
+      - name: Build image-storage image
+        run: docker buildx build ./image-storage --file ./image-storage/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/image-storage:latest
+
+      - name: Build image-processor image
+        run: docker buildx build ./image-processor --file ./image-processor/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/image-processor:latest
+
+      - name: Build frontend
+        run: docker buildx build -o ./frontend/dist --file ./frontend/Dockerfile --progress plain
+
+      - name: Copy frontend into webpage-host
+        run: cp ./frontend/dist ./backend/webpage-host/public
+      
+      - name: Build webpage-host
+        run: docker buildx build ./webpage-host --file ./webpage-host/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/webpage-host:latest
+
+      - name: copy files via ssh password
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          source: "server"
+          target: cicd_hf
+
+      - name: Deploy to remote server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cp cicd_hf
+            docker-compose pull
+            docker-compose up -d
