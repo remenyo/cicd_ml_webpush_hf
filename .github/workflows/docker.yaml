@@ -30,8 +30,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Build and push backend services (adjust names and paths as needed)
-      - name: Build image-storage image
-        run: docker build ./backend/image-storage --file ./backend/image-storage/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/image-storage:latest
+      - name: Build file-store image
+        run: docker build ./backend/file-store --file ./backend/file-store/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/file-store:latest
 
       - name: Build image-processor image
         run: docker build ./backend/image-processor --file ./backend/image-processor/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/image-processor:latest
