@@ -37,7 +37,7 @@ jobs:
         run: docker build ./backend/image-processor --file ./backend/image-processor/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/image-processor:latest
 
       - name: Build frontend
-        run: docker build -o ./frontend/dist --file ./frontend/Dockerfile --progress plain
+        run: docker buildx build ./frontend --file ./frontend/Dockerfile -o ./frontend/dist --progress plain
 
       - name: Copy frontend into webpage-host
         run: cp ./frontend/dist ./backend/webpage-host/public
