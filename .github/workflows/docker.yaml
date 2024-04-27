@@ -53,7 +53,7 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          source: "server"
+          source: "server/docker-compose.yaml"
           target: cicd_hf
 
       - name: Deploy to remote server
@@ -64,6 +64,6 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           script: |
-            cp cicd_hf
+            cd cicd_hf
             docker-compose pull
             docker-compose up -d

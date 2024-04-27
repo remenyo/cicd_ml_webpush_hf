@@ -1,0 +1,28 @@
+networks:
+  backend-network:
+
+services:
+  file-store:
+    image: ghcr.io/remenyo/file-store
+    command: --imageProcessorURL image-processor:3000
+    volumes:
+      - ./images:/images
+    ports:
+      - "3000:3000"
+    networks:
+      - backend-network
+
+  image-processor:
+    image: ghcr.io/remenyo/image-processor
+    networks:
+      - backend-network
+
+  webpage-host:
+    image: ghcr.io/remenyo/webpage-host
+    ports:
+      - "80:3000"
+    networks:
+      - backend-network
+    depends_on:
+      - file-store
+      - image-processor
