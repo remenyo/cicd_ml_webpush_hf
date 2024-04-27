@@ -65,5 +65,5 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd cicd_hf
-            docker-compose pull
-            docker-compose up -d
+            docker compose pull
+            docker compose up -d
