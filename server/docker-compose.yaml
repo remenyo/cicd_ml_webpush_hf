@@ -4,7 +4,6 @@ networks:
 services:
   image-processor:
     container_name: image-processor
-    command: node index.mjs --port 3001
     image: ghcr.io/remenyo/image-processor
     networks:
       - backend-network
@@ -12,7 +11,7 @@ services:
   file-store:
     container_name: file-store
     image: ghcr.io/remenyo/file-store
-    command: node index.mjs --imageProcessorURL http://image-processor:3001
+    command: node index.mjs --imageProcessorURL http://image-processor:3000
     volumes:
       - ./images:/images
     ports:
