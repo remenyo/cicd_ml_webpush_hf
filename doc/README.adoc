@@ -1,28 +1,38 @@
-= Felhők hálózati szolgáltatásai laboratórium - BMEVITMMB11-HU
+= Felhők hálózati szolgáltatásai laboratórium * BMEVITMMB11-HU
 
 
-Házi feladat - Remény Olivér - IEY82F - 2024.04.14.
+Házi feladat - Remény Olivér - IEY82F - 2024.04.28.
 
 Röviden:
-- Repo: https://github.com/remenyo/cicd_ml_webpush_hf
-- Webapp: http://162.55.213.88
-Használt technológiák: Vue3 (Frontend), NodeJS 22 (Express backend API), Python 3.13 (Flask image processing API), OpenCV (Object Detection API), Docker (Compose), GitHub Actions, GitHub Container Registry
+
+* Repo: https://github.com/remenyo/cicd_ml_webpush_hf
+* Webapp: http://162.55.213.88
+
+Használt technológiák:
+
+* Vue3 (Frontend)
+* NodeJS 22 (Express backend API)
+* Python 3.13 (Flask image processing API)
+* OpenCV (Object Detection API)
+* Docker (Compose)
+* GitHub Actions
+* GitHub Container Registry
 
 image::release_mainpage.png[title="A github repo főoldala, jobb oldalt a releases ablakban az aktuális dokumentáció PDF" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 image::actions1.png[title="Actions minden pushra lefut." caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 image::actions2.png[title="Egy futás részletei" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
-image::upload.png[title="Feltöltés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::upload_image.png[title="Feltöltés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 image::processed.png[title="Megjelenítés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 
 == Áttekintés, specifikáció
 
 Ez a feladat az alábbi részekból áll:
 
-- Egy webes felület létrehozása, amely lehetővé tesz képek feltöltését leírásokkal együtt,
-- Egy olyan rendszer kialakítása ami tárolja a képeket leírásaikkal együtt
-- Egy olyan program integrálása a feltöltés folyamatába ami felismeri az autó alakú dolgokat a feltöltött képen, bekeretezi azokat és visszatér a felismert autó alakú objektumok számával
-- Egy üzenő rendszerből, ami az összes feliratkozót értesíti az összes feltöltési eseményről, a feldolgozás eredményével együtt.
-- Egy CI/CD folyamat megírásából, ami az előbb felsorolt szolgáltatásokat célszerűen lefordítja, és elindítja egy szerveren.
+* Egy webes felület létrehozása, amely lehetővé tesz képek feltöltését leírásokkal együtt,
+* Egy olyan rendszer kialakítása ami tárolja a képeket leírásaikkal együtt
+* Egy olyan program integrálása a feltöltés folyamatába ami felismeri az autó alakú dolgokat a feltöltött képen, bekeretezi azokat és visszatér a felismert autó alakú objektumok számával
+* Egy üzenő rendszerből, ami az összes feliratkozót értesíti az összes feltöltési eseményről, a feldolgozás eredményével együtt.
+* Egy CI/CD folyamat megírásából, ami az előbb felsorolt szolgáltatásokat célszerűen lefordítja, és elindítja egy szerveren.
 
 Ez a dokumentum meghatározza a webszolgáltatás fejlesztése során használt architektúrális komponenseket, technológiákat és folyamatokat.
 
@@ -33,53 +43,53 @@ toc::[]
 
 === 1. Felhasználói felület (UI)
 
-- **Technológia**: HTML+CSS+JS
+* **Technológia**: HTML+CSS+JS
   Megjegyzés: Várhatóan nem lesz szükség reaktivitásra, de ha fejlesztés során kiderül hogy mégis, akkor a Vue3 JS keretrendszer lesz alkalmazva.
-- **Funkcionalitás**:
-  - Feltöltőoldal biztosítása a felhasználók számára a képek és a hozzájuk tartozó leírásokkal.
-  - Egy adott feltöltés megtekintése, ahol látható az eredeti és a feldolgozott kép (ahol az észlelt autók be vannkak keretezve), emellett a keretek száma és a felhasználói leírás is elolvasható.
-  - Lehetővé teszi a felhasználók számára az értesítésekre való feliratkozást egy egyszerű űrlapon keresztül. (Várhatóan nem kell megadni semmit, csak egy gomb lesz.)
+* **Funkcionalitás**:
+  ** Feltöltőoldal biztosítása a felhasználók számára a képek és a hozzájuk tartozó leírásokkal.
+  ** Egy adott feltöltés megtekintése, ahol látható az eredeti és a feldolgozott kép (ahol az észlelt autók be vannkak keretezve), emellett a keretek száma és a felhasználói leírás is elolvasható.
+  ** Lehetővé teszi a felhasználók számára az értesítésekre való feliratkozást egy egyszerű űrlapon keresztül. (Várhatóan nem kell megadni semmit, csak egy gomb lesz.)
 
 === 2. Képek és leírás tárolása (DB)
 
-- **Technológia**: Fájlrendszer
+* **Technológia**: Fájlrendszer
   Megjegyzés: Több folyamat is hozzá fog férni egy fájlhoz, azonban egy fájlt csak egy folyamat fog írni valaha.
-- **Funkcionalitás**: Egyszerű fájl írás és olvasás funkcionalitás a követelmény.
-  - Eredeti képek tárolása egy mappában
-  - Módosíott képek tárolása (egy másik mappában azonos névvel mint az eredeti kép.)
-  - Leírás tárolása (egy másik mappában azonos névvel mint az eredeti kép.)
-  - (Ha ezt a felsimerő modell igényli, feltöltés során a kép egységes méretre és formátumra alakítása.)
+* **Funkcionalitás**: Egyszerű fájl írás és olvasás funkcionalitás a követelmény.
+  ** Eredeti képek tárolása egy mappában
+  ** Módosíott képek tárolása (egy másik mappában azonos névvel mint az eredeti kép.)
+  ** Leírás tárolása (egy másik mappában azonos névvel mint az eredeti kép.)
+  ** (Ha ezt a felsimerő modell igényli, feltöltés során a kép egységes méretre és formátumra alakítása.)
 
 === 3. Objektumfelismerés képeken (ML)
 
-- **Technológia**: Yolo objektumfelismerő modell
-- **Funkcionalitás**:
-  - Képek nevének fogadása http apin keresztül
-  - Képek beolvasása fájlrendszerből
-  - Képeken autó alakú objektumok bekeretezése, opcionálisan címkézése
-  - "Keretezett" képek mentése fájlrendszerbe.
+* **Technológia**: Yolo objektumfelismerő modell
+* **Funkcionalitás**:
+  ** Képek nevének fogadása http apin keresztül
+  ** Képek beolvasása fájlrendszerből
+  ** Képeken autó alakú objektumok bekeretezése, opcionálisan címkézése
+  ** "Keretezett" képek mentése fájlrendszerbe.
 
 Megjegyzés: Egy potenciális megoldást mutat be ez a blogpost: (https://dev.to/andreygermanov/how-to-create-yolov8-based-object-detection-web-service-using-python-julia-nodejs-javascript-go-and-rust-4o8e)
 
 === 4. Üzenőrendszer
 
-- **Technológia**: Web push
-- **Funkcionalitás**:
-  - Feliratkozók nyilvántartása (fájlrendszerben tárolt lista segítségével)
-  - Belső esemény (feltöltés és felismerés) hatására az összes feliratkozó értesítése új feltöltésről
+* **Technológia**: Web push
+* **Funkcionalitás**:
+  ** Feliratkozók nyilvántartása (fájlrendszerben tárolt lista segítségével)
+  ** Belső esemény (feltöltés és felismerés) hatására az összes feliratkozó értesítése új feltöltésről
 
 Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: (https://web.dev/articles/sending-messages-with-web-push-libraries)
 
 === 5. CI/CD rendszer
 
-- **Technológia**: Github Actions + Docker (Build) + Docker compose remote deploy
-- **Funckionalitás**:
-  - A feltöltött forráskódból docker imagek előállítása
-  - Imagek feltöltése a GitHub(vagy DockerHub) Container Registry-be
-    - Ennek a megoldásáról szól ez a bejegyzés: (https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
-  - Egy távoli szerveren futó docker compose példány utasítása, hogy töltse le az összes új image-t, és frissítse a futó konténereit az új verziókkal.
-    - Ennek a megoldásáról szól ez a bejegyzés: (https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
-  - Ez pedig Github Actions specifikus: (https://github.com/marketplace/actions/docker-compose-remote-deploy)
+* **Technológia**: Github Actions + Docker (Build) + Docker compose remote deploy
+* **Funckionalitás**:
+  ** A feltöltött forráskódból docker imagek előállítása
+  ** Imagek feltöltése a GitHub(vagy DockerHub) Container Registry-be
+    *** Ennek a megoldásáról szól ez a bejegyzés: (https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
+  ** Egy távoli szerveren futó docker compose példány utasítása, hogy töltse le az összes új image-t, és frissítse a futó konténereit az új verziókkal.
+    *** Ennek a megoldásáról szól ez a bejegyzés: (https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
+    *** Ez pedig Github Actions specifikus: (https://github.com/marketplace/actions/docker-compose-remote-deploy)
 
 // pagebreak
 <<<
@@ -90,8 +100,8 @@ Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: (https://web.d
 
 A frontend egy VueJS 3 single page web application. Az SPA csak annyit jelent hogy minden path (/images is) az index.html betöltését eredményezi, ami aztán javascriptből kiolvassa a path-et, és annak függvényében módosítja a kinézetét, funkcionalitását.
 
-- A `/`-n elérhető a feltöltés és a feliratkozás funckció,
-- A `/image/{id}`-n pedig a feltöltött kép leírással és a detekció eredménye látható.
+* A `/`-n elérhető a feltöltés és a feliratkozás funckció,
+* A `/image/{id}`-n pedig a feltöltött kép leírással és a detekció eredménye látható.
 
 A kiszolgáló egy egyszerű NodeJS Express szerver (webpage-host backend service) ami kiszolgálja az index.html-t ha nem találja meg a fájlt amit kért a felhasználó (Single Page Application)
 
@@ -99,11 +109,11 @@ A kiszolgáló egy egyszerű NodeJS Express szerver (webpage-host backend servic
 
 A backend az alábbi részekből áll:
 
-- webpage-host: weboldalt kiszolgáló program (kész)
-- gateway: a weboldal és az alábbi szolgáltatások közötti közvetítő (WIP)
-  - file-store: képek mentése és letöltése (kész, egyelőre ebben van a gateway kód is)
-  - image-processor: autó alakú objektumok felismerése (kész, csak gagyi, opencv haar cascade car detection)
-  - subscription-handler: feliratkozást kezelő rendszer (WIP)
+* webpage-host: weboldalt kiszolgáló program (kész)
+* gateway: a weboldal és az alábbi szolgáltatások közötti közvetítő (WIP)
+* file-store: képek mentése és letöltése (kész, egyelőre ebben van a gateway kód is)
+* image-processor: autó alakú objektumok felismerése (kész, csak gagyi, opencv haar cascade car detection)
+* subscription-handler: feliratkozást kezelő rendszer (WIP)
 
 Minden szolgáltatás a 3000-es porton érhető el alapértelmezetten, de a működés során minimum két port szükséges, mert nem a "backend" szolgálja ki a frontendet jelenleg.
 
@@ -123,9 +133,9 @@ A Docker Image-ket a Docker Compose futtatja. Az image-ket a GHCR-ről szedi le,
 
 Források:
 
-- How to deploy on remote Docker hosts with docker-compose (https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
-- Docker Compose Remote Action (https://github.com/marketplace/actions/docker-compose-remote-deploy)
-- Publishing and installing a package with GitHub Actions (https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
+* How to deploy on remote Docker hosts with docker-compose (https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
+* Docker Compose Remote Action (https://github.com/marketplace/actions/docker-compose-remote-deploy)
+* Publishing and installing a package with GitHub Actions (https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
 
 Az alábbi szekvenciadiagramn bemutatja hogy hogyan fog lefutni a végső CICD folyamat:
 [mermaid, width=3500]
