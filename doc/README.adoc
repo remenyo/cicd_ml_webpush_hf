@@ -83,12 +83,7 @@ A frontend egy VueJS 3 single page web application. Az SPA csak annyit jelent ho
 - A `/`-n elérhető a feltöltés és a feliratkozás funckció,
 - A `/image/{id}`-n pedig a feltöltött kép leírással és a detekció eredménye látható.
 
-A kiszolgáló egy egyszerű NodeJS Express szerver:
-
-[source,javascript]
-....
-include::../backend/webpage-host/index.js[]
-....
+A kiszolgáló egy egyszerű NodeJS Express szerver (webpage-host backend service)
 
 === 2. Backend
 
