@@ -8,6 +8,12 @@ Röviden:
 - Webapp: http://162.55.213.88
 Használt technológiák: Vue3 (Frontend), NodeJS 22 (Express backend API), Python 3.13 (Flask image processing API), OpenCV (Object Detection API), Docker (Compose), GitHub Actions, GitHub Container Registry
 
+image::release_mainpage.png[title="A github repo főoldala, jobb oldalt a releases ablakban az aktuális dokumentáció PDF" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::actions1.png[title="Actions minden pushra lefut." caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::actions2.png[title="Egy futás részletei" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::upload.png[title="Feltöltés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::processed.png[title="Megjelenítés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+
 == Áttekintés, specifikáció
 
 Ez a feladat az alábbi részekból áll:
@@ -131,52 +137,15 @@ include::cicd_sequencediagram.mermaid[]
 
 A renderer dockerfile asciidoctort használ. Ezt a technológiát alkalmaztam a szakdolgozatomban, és az a tervem hogy így fogom megírni a diplomatervem is.
 
-[source,dockerfile]
-....
-include::Dockerfile[]
-....
+// [source,dockerfile]
+// ....
+// include::Dockerfile[]
+// ....
 
-Az actions yaml ami kirendereli ezt a dokumentumot és release-be teszi a PDF-et:
-
-[source,yaml]
-....
-name: Docker Image CI CD action
-
-on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /var/lib/docker
-          key: ${{ runner.os }}-docker-${{ github.sha }}
-
-      - name: Build the Docker image
-        run: docker buildx build . --file Dockerfile --progress plain -o build
-
-      - name: Rename files
-        run: datetime=$(TZ=Europe/Budapest date -Iseconds); for file in ./build/*.pdf; do mv "$file" "${file%.pdf}"_$datetime.pdf; done
-
-      - name: Upload binaries to release
-        uses: xresloader/upload-to-github-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          file: "build/*.pdf"
-          prerelease: false
-          draft: false
-....
+Egy yaml (documentation.yaml) kirendereli ezt a dokumentumot és release-be teszi a PDF-et, a másik (docker.yaml)
 
 A dokumentációs PDF-et a releases fülön látjuk a kezdőlapon:
 
 image::release_mainpage.png[title="A github repo főoldala, jobb oldalt a releases ablakban az aktuális dokumentáció PDF" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::upload.png[title="Feltöltés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::processed.png[title="Megjelenítés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
