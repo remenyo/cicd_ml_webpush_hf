@@ -74,7 +74,7 @@ const onFileChanged = ($event) => {
   }
 };
 
-const APIPort = ":3000"; // Set your API base URL
+const apiBaseURL = "http://162.55.213.88:3000"; // Set your API base URL
 
 onMounted(() => {
   updateMode();
@@ -98,9 +98,9 @@ const updateMode = () => {
 const loadImage = async () => {
   loading.value = true;
   const imageId = window.location.pathname.split("/").pop();
-  const imageUrl = `${APIPort}/image/${imageId}`;
-  const processedImageUrl = `${APIPort}/image/${imageId}_processed`; // URL for processed image
-  const descriptionUrl = `${APIPort}/image/${imageId}_desc`;
+  const imageUrl = `${apiBaseURL}/image/${imageId}`;
+  const processedImageUrl = `${apiBaseURL}/image/${imageId}_processed`; // URL for processed image
+  const descriptionUrl = `${apiBaseURL}/image/${imageId}_desc`;
 
   try {
     const imageResponse = await fetch(imageUrl);
@@ -137,7 +137,7 @@ const uploadImage = async () => {
   formData.append("description", description.value);
 
   try {
-    const response = await fetch(`${APIPort}/image`, {
+    const response = await fetch(`${apiBaseURL}/image`, {
       method: "POST",
       body: formData,
     });

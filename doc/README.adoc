@@ -3,6 +3,10 @@
 
 Házi feladat - Remény Olivér - IEY82F - 2024.04.14.
 
+Röviden:
+- Repo: https://github.com/remenyo/cicd_ml_webpush_hf
+- Webapp: http://162.55.213.88
+Használt technológiák: Vue3 (Frontend), NodeJS 22 (Express backend API), Python 3.13 (Flask image processing API), OpenCV (Object Detection API), Docker (Compose), GitHub Actions, GitHub Container Registry
 
 == Áttekintés, specifikáció
 
@@ -83,13 +87,13 @@ A frontend egy VueJS 3 single page web application. Az SPA csak annyit jelent ho
 - A `/`-n elérhető a feltöltés és a feliratkozás funckció,
 - A `/image/{id}`-n pedig a feltöltött kép leírással és a detekció eredménye látható.
 
-A kiszolgáló egy egyszerű NodeJS Express szerver (webpage-host backend service)
+A kiszolgáló egy egyszerű NodeJS Express szerver (webpage-host backend service) ami kiszolgálja az index.html-t ha nem találja meg a fájlt amit kért a felhasználó (Single Page Application)
 
 === 2. Backend
 
 A backend az alábbi részekből áll:
 
-- webpage-host: weboldalt kiszolgáló rendszer (kész)
+- webpage-host: weboldalt kiszolgáló program (kész)
 - gateway: a weboldal és az alábbi szolgáltatások közötti közvetítő (WIP)
   - file-store: képek mentése és letöltése (kész, egyelőre ebben van a gateway kód is)
   - image-processor: autó alakú objektumok felismerése (kész, csak gagyi, opencv haar cascade car detection)
@@ -98,8 +102,8 @@ A backend az alábbi részekből áll:
 Minden szolgáltatás a 3000-es porton érhető el alapértelmezetten, de a működés során minimum két port szükséges, mert nem a "backend" szolgálja ki a frontendet jelenleg.
 
 A webpage-host 80-as porton szolgál ki.
-A file store a 3000-es porton érhető majd el.
-Az image processornak nem kell kifelé elérhetőnek lennie így szintén a 3000-es porton működik alapból.
+A file-store a 3000-es porton érhető el.
+Az image-processor-nak nem kell kifelé elérhetőnek lennie így szintén a 3000-es porton működik alapból.
 
 ==== Docker
 
@@ -107,7 +111,7 @@ Minden szolgáltatás egy-egy docker image.
 
 ==== Compose
 
-A docker image-ket a docker compose futtatja és tartja karban.
+A Docker Image-ket a Docker Compose futtatja. Az image-ket a GHCR-ről szedi le, annak hatására hogy a Github Actions SSH-n szól a szervernek, hogy pullolja.
 
 === 3. CI/CD rendszer
 
