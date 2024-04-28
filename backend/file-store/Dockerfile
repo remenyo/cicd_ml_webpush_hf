@@ -6,4 +6,4 @@ COPY . .
 RUN npm i
 
 # Start the application
-CMD ["node", "index.js"]
+CMD ["node", "index.mjs"]

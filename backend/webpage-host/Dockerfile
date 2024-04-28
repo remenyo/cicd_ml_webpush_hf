@@ -5,4 +5,4 @@ COPY . .
 
 RUN npm i
 
-CMD ["node", "index.js"]
+CMD ["node", "index.mjs"]
