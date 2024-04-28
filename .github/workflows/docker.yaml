@@ -41,12 +41,12 @@ jobs:
         run: docker buildx build ./frontend --file ./frontend/Dockerfile -o ./frontend/dist --progress plain --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
 
       - name: Copy frontend into webpage-host
-        run: cp -r ./frontend/dist ./backend/webpage-host/public
+        run: mkdir ./backend/webpage-host/public && tar -xzf ./frontend/dist/dist.tar.gz -C ./backend/webpage-host/public
       
       - name: Build webpage-host
         run: docker buildx build ./backend/webpage-host --file ./backend/webpage-host/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/webpage-host:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
 
-      - name: copy files via ssh password
+      - name: Copy init files over SSH
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}

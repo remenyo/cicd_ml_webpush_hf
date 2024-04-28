@@ -5,7 +5,7 @@ services:
   file-store:
     container_name: file-store
     image: ghcr.io/remenyo/file-store
-    command: --imageProcessorURL image-processor:3000
+    command: node index.mjs --imageProcessorURL image-processor:3000
     volumes:
       - ./images:/images
     ports:

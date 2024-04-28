@@ -22,16 +22,29 @@ const { values } = parseArgs({
 const portNumber = parseInt(values.port);
 const staticFilePath = values.staticFilePath;
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
-// Serve static files from the 'public' directory
-app.use(express.static(staticFilePath));
+// Serve static files from the staticfilePath directory
+app.use(express.static(path.join(__dirname, staticFilePath)));
 
-// For all other routes (SPA routes), serve index.html
+// Log incoming requests
+app.use((req, res, next) => {
+  console.log(`Received request for: ${req.path}`);
+  next();
+});
+
 app.get("*", (req, res) => {
-  const __filename = fileURLToPath(import.meta.url); // Get __filename
-  const __dirname = path.dirname(__filename); // Get __dirname
-  res.sendFile("index.html", { root: path.join(__dirname, staticFilePath) });
+  const fullPath = path.join(__dirname, staticFilePath, "index.html");
+  console.log(`Sending index.html from: ${fullPath}`);
+  res.sendFile(fullPath, (err) => {
+    if (err) {
+      console.error("Error sending file", err);
+      res.status(500).send("Error while sending index.html");
+    }
+  });
 });
 
 app.listen(portNumber, () => {
