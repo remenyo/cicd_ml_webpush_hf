@@ -74,7 +74,7 @@ const onFileChanged = ($event) => {
   }
 };
 
-const apiBaseUrl = "http://localhost:3000"; // Set your API base URL
+const apiBaseUrl = window.location.host + ":3000"; // Set your API base URL
 
 onMounted(() => {
   updateMode();
