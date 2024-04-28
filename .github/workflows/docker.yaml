@@ -54,7 +54,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           source: "server"
-          target: server
+          target: .
 
       - name: Deploy to remote server
         uses: appleboy/ssh-action@master
