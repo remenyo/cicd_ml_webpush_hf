@@ -3,6 +3,7 @@ networks:
 
 services:
   file-store:
+    container_name: file-store
     image: ghcr.io/remenyo/file-store
     command: --imageProcessorURL image-processor:3000
     volumes:
@@ -13,11 +14,13 @@ services:
       - backend-network
 
   image-processor:
+    container_name: image-processor
     image: ghcr.io/remenyo/image-processor
     networks:
       - backend-network
 
   webpage-host:
+    container_name: webpage-host
     image: ghcr.io/remenyo/webpage-host
     ports:
       - "80:3000"

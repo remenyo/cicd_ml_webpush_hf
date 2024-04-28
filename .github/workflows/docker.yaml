@@ -53,8 +53,8 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          source: "server/docker-compose.yaml"
-          target: cicd_hf
+          source: "server"
+          target: server
 
       - name: Deploy to remote server
         uses: appleboy/ssh-action@master
@@ -64,7 +64,9 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           script: |
-            cd cicd_hf/server
+            cd server
+            chmod +x install-docker.sh
+            ./install-docker.sh
             mkdir images
             docker compose pull
             docker compose up -d
