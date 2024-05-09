@@ -34,8 +34,8 @@ const subscriptionURL = values.subscriptionURL;
 const app = express();
 
 // Use express-http-proxy to create proxy middleware
-app.use("/image", expressHttpProxy(fileStoreURL));
-app.use("/subscribe", expressHttpProxy(subscriptionURL));
+app.use("/api/image", expressHttpProxy(fileStoreURL));
+app.use("/api/subscribe", expressHttpProxy(subscriptionURL));
 app.use("/", expressHttpProxy(webpageHostURL)); // Default route for all other paths
 
 app.listen(portNumber, () => {

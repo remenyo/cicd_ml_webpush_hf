@@ -74,7 +74,7 @@ const onFileChanged = ($event) => {
   }
 };
 
-const apiBaseURL = ""; // It's the host itself.
+const apiBaseURL = "/api";
 
 onMounted(() => {
   updateMode();
