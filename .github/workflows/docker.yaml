@@ -37,15 +37,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push image
+        if: matrix.service != 'frontend'
         run: |
-          # Construct path based on service
-          if [[ ${{ matrix.service }} == "frontend" ]]; then
-            build_path="./${{ matrix.service }}"
-            dockerfile_path="./${{ matrix.service }}/Dockerfile"
-          else
-            build_path="./backend/${{ matrix.service }}"
-            dockerfile_path="./backend/${{ matrix.service }}/Dockerfile"
-          fi
+          build_path="./backend/${{ matrix.service }}"
+          dockerfile_path="./backend/${{ matrix.service }}/Dockerfile"
 
           docker buildx build "$build_path" \
             --file "$dockerfile_path" \
@@ -55,10 +50,9 @@ jobs:
             --cache-from type=gha \
             --cache-to type=gha,mode=max
 
-          if [[ ${{ matrix.service }} == "frontend" ]]; then
-            mkdir -p ./backend/webpage-host/public
-            tar -xzf ./frontend/dist/dist.tar.gz -C ./backend/webpage-host/public
-          fi
+      - name: Build frontend
+        if: matrix.service == 'frontend'
+        run: docker buildx build ./frontend --file ./frontend/Dockerfile -o ./frontend/dist --progress plain --cache-from type=gha --cache-to type=gha,mode=max
 
       - name: Copy frontend into webpage-host (frontend only)
         if: matrix.service == 'frontend'
