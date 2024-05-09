@@ -3,10 +3,10 @@
 
 Házi feladat - Remény Olivér - IEY82F - 2024.04.28.
 
-Röviden:
+== Röviden:
 
 * Repo: https://github.com/remenyo/cicd_ml_webpush_hf
-* Webapp: http://162.55.213.88
+* Webapp: https://cicdhf.11010011.xyz
 
 Használt technológiák:
 
@@ -152,10 +152,4 @@ A renderer dockerfile asciidoctort használ. Ezt a technológiát alkalmaztam a 
 // include::Dockerfile[]
 // ....
 
-Egy yaml (documentation.yaml) kirendereli ezt a dokumentumot és release-be teszi a PDF-et, a másik (docker.yaml)
-
-A dokumentációs PDF-et a releases fülön látjuk a kezdőlapon:
-
-image::release_mainpage.png[title="A github repo főoldala, jobb oldalt a releases ablakban az aktuális dokumentáció PDF" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
-image::upload.png[title="Feltöltés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
-image::processed.png[title="Megjelenítés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+Egy yaml (documentation.yaml) kirendereli ezt a dokumentumot és release-be teszi a PDF-et, a másik (docker.yaml) pedig megépíti az imageket, feltölti őket a ghcr-re, majd frissíti a szerveren a docker-compose.yaml-t.

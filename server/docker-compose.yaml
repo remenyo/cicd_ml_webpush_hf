@@ -2,32 +2,48 @@ networks:
   backend-network:
 
 services:
-  image-processor:
-    container_name: image-processor
-    image: ghcr.io/remenyo/image-processor
-    networks:
-      - backend-network
-
-  file-store:
-    container_name: file-store
-    image: ghcr.io/remenyo/file-store
-    command: node index.mjs --imageProcessorURL http://image-processor:3000/detect_cars
-    volumes:
-      - ./images:/images
-    ports:
-      - "8080:3000"
-    networks:
-      - backend-network
-    depends_on:
-      - image-processor
-
-  webpage-host:
-    container_name: webpage-host
-    image: ghcr.io/remenyo/webpage-host
+  gateway:
+    container_name: gateway
+    image: ghcr.io/remenyo/gateway_cicdhf
+    command: node index.mjs --port 3000 --fileStoreURL http://file-store:3000 --webpageHostURL http://webpage-host:3000 --subscriptionURL http://subscription-handler:3000
     ports:
       - "80:3000"
     networks:
       - backend-network
     depends_on:
       - file-store
+      - webpage-host
+
+  webpage-host:
+    container_name: webpage-host
+    image: ghcr.io/remenyo/webpage-host_cicdhf
+    # command not needed, as it is the default: node index.mjs --port 3000 --staticFilePath ./public
+    networks:
+      - backend-network
+    depends_on:
+      - file-store
+
+  file-store:
+    container_name: file-store
+    image: ghcr.io/remenyo/file-store_cicdhf
+    command: node index.mjs --imageProcessorURL http://image-processor:3000/detect_cars --subscriptionURL http://subscription-handler:3000
+    volumes:
+      - ./images:/images
+    networks:
+      - backend-network
+    depends_on:
       - image-processor
+      - subscription-handler
+
+  image-processor:
+    container_name: image-processor
+    image: ghcr.io/remenyo/image-processor_cicdhf
+    networks:
+      - backend-network
+
+  subscription-handler:
+    container_name: subscription-handler
+    image: ghcr.io/remenyo/subscription-handler_cicdhf
+    # command not needed as it is the default: node index.mjs
+    networks:
+      - backend-network

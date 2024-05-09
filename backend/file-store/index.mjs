@@ -27,6 +27,10 @@ const { values } = parseArgs({
       type: "string",
       default: "http://localhost:3001/detect_cars",
     },
+    subscriptionURL: {
+      type: "string",
+      default: "http://localhost:3002",
+    },
   },
   strict: true,
   allowPositionals: true,
@@ -39,10 +43,11 @@ const imageFilePath = values.imageFilePath;
 const descPostFix = values.descPostFix;
 const processedPostFix = values.processedPostFix;
 const imageProcessorURL = values.imageProcessorURL;
+const subscriptionURL = values.subscriptionURL;
 
 if (!fs.existsSync(imageFilePath)) {
   console.error(`imageFilePath ${imageFilePath} does not exist.`);
-  // this line would hide an error. fs.mkdirSync(imageFilePath, { recursive: true });
+  // this line would hide an error (unmounted image file path), but without it, the process fails on save: fs.mkdirSync(imageFilePath, { recursive: true });
 }
 
 const app = express();
@@ -50,7 +55,7 @@ const app = express();
 app.use(cors());
 
 app.use((req, res, next) => {
-  // console.log(req.method, req.url);
+  // console.log(req.method, req.url); // debug logging
   next();
 });
 
@@ -122,6 +127,18 @@ app.post("/image", (req, res) => {
             );
           }
         });
+      try {
+        await fetch(subscriptionURL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ image: base64Image }),
+        });
+      } catch {
+        console.error(`Notification sending failed: ${e}`);
+        // This (notification sending error) is not an "error" that needs to be sent to the client.
+      }
     } catch (e) {
       console.error("Error saving image or description:", e);
       return res.status(500).send("Failed to save data");

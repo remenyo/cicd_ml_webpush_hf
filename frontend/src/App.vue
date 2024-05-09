@@ -74,7 +74,7 @@ const onFileChanged = ($event) => {
   }
 };
 
-const apiBaseURL = "https://cicdhf.11010011.xyz:8080";
+const apiBaseURL = ""; // It's the host itself.
 
 onMounted(() => {
   updateMode();

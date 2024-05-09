@@ -1,7 +1,7 @@
 import express from "express";
 import { parseArgs } from "util";
-import path from "path"; // Import the path module
-import { fileURLToPath } from "url"; // Import fileURLToPath
+import path from "path";
+import { fileURLToPath } from "url";
 
 const { values } = parseArgs({
   args: process.argv,
@@ -27,18 +27,12 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Serve static files from the staticfilePath directory
+// Serve static files from the staticFilePath directory
 app.use(express.static(path.join(__dirname, staticFilePath)));
 
-// Log incoming requests
-app.use((req, res, next) => {
-  console.log(`Received request for: ${req.path}`);
-  next();
-});
-
+// Handle all other requests by serving index.html
 app.get("*", (req, res) => {
   const fullPath = path.join(__dirname, staticFilePath, "index.html");
-  console.log(`Sending index.html from: ${fullPath}`);
   res.sendFile(fullPath, (err) => {
     if (err) {
       console.error("Error sending file", err);
