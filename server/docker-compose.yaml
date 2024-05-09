@@ -44,6 +44,9 @@ services:
   subscription-handler:
     container_name: subscription-handler
     image: ghcr.io/remenyo/subscription-handler_cicdhf
+    volumes:
+      - ./subscriptions:/subscriptions
+      - ./vapid_secret:/secrets
     # command not needed as it is the default: node index.mjs
     networks:
       - backend-network

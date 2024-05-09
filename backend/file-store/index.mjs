@@ -59,7 +59,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/image", (req, res) => {
+app.post("/", (req, res) => {
   const form = formidable({ multiples: false });
 
   form.parse(req, async (err, fields, files) => {
@@ -128,12 +128,15 @@ app.post("/image", (req, res) => {
           }
         });
       try {
-        await fetch(subscriptionURL, {
+        await fetch(`${subscriptionURL}/notify`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ image: base64Image }),
+          body: JSON.stringify({
+            text: "Someone uploaded a new image.",
+            url: `/image/${uuid}`,
+          }),
         });
       } catch {
         console.error(`Notification sending failed: ${e}`);
@@ -148,7 +151,7 @@ app.post("/image", (req, res) => {
   });
 });
 
-app.get("/image/:id", async (req, res) => {
+app.get("/:id", async (req, res) => {
   const id = req.params.id;
   try {
     const image = fs.readFileSync(imageFilePath + id);

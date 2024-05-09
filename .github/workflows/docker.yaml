@@ -36,10 +36,10 @@ jobs:
 
       - name: Build image-processor image
         run: docker buildx build ./backend/image-processor --file ./backend/image-processor/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/image-processor_cicdhf:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
-      
+
       - name: Build subscription-handler image
         run: docker buildx build ./backend/subscription-handler --file ./backend/subscription-handler/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/subscription-handler_cicdhf:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
-      
+
       - name: Build gateway image
         run: docker buildx build ./backend/gateway --file ./backend/gateway/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/gateway_cicdhf:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
 
@@ -48,7 +48,7 @@ jobs:
 
       - name: Copy frontend into webpage-host
         run: mkdir ./backend/webpage-host/public && tar -xzf ./frontend/dist/dist.tar.gz -C ./backend/webpage-host/public
-      
+
       - name: Build webpage-host
         run: docker buildx build ./backend/webpage-host --file ./backend/webpage-host/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/webpage-host_cicdhf:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
 
@@ -74,5 +74,8 @@ jobs:
             chmod +x install-docker.sh
             ./install-docker.sh
             mkdir images
+            mkdir subscriptions
+            mkdir vapid_secret
+            echo "${{ secrets.VAPID }}" > ./vapid_secret/VAPID.json
             docker compose pull
             docker compose up -d
