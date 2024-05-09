@@ -75,7 +75,7 @@ jobs:
             --cache-to type=gha,mode=max
 
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: build # This job will run after the 'build' job completes
     steps:
       - uses: actions/checkout@v4
