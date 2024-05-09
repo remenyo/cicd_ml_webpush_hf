@@ -3,7 +3,6 @@ import * as fs from "fs";
 import path from "path";
 import { parseArgs } from "util";
 import webPush from "web-push";
-import bodyParser from "body-parser";
 
 const { values } = parseArgs({
   args: process.argv,
@@ -59,7 +58,8 @@ webPush.setVapidDetails(
 );
 
 const app = express();
-app.use(bodyParser.json());
+
+app.use(express.json());
 
 // Function to save a subscription to a file
 function saveSubscription(subscription) {
@@ -86,50 +86,31 @@ function loadSubscriptions() {
 app.post("/new", (req, res) => {
   console.log(`New subscription.`);
 
-  let subscriptionData = "";
+  saveSubscription(req.body);
 
-  req.on("data", (chunk) => {
-    subscriptionData += chunk;
+  res.status(201).json({});
+
+  // Send a welcome notification
+  const payload = JSON.stringify({
+    title: "Subscribed!",
+    body: "You will see a notification like this if a new image is uploaded.",
+    url: "/",
   });
 
-  req.on("end", () => {
-    try {
-      const subscription = JSON.parse(subscriptionData);
-      saveSubscription(subscription);
-
-      res.status(201).json({});
-
-      // Send a welcome notification
-      const payload = JSON.stringify({
-        title: "Subscribed!",
-        body: "You will see a notification like this if a new image is uploaded.",
-        url: "/",
-      });
-
-      webPush
-        .sendNotification(subscription, payload)
-        .then(() => {
-          // console.log("Notification sent.")
-        })
-        .catch((error) => {
-          console.error(error);
-          throw error;
-        });
-    } catch (error) {
-      console.error("Error parsing JSON:", error);
-      res.status(400).text("Invalid subscription data");
-    }
-  });
+  webPush
+    .sendNotification(req.body, payload)
+    .then(() => {
+      // console.log("Notification sent.")
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 });
 
 // Handle POST requests on /notify to send notifications to all subscribers
 app.post("/notify", (req, res) => {
-  console.log(req);
-  const notificationContent = req.body;
-
-  const notificationText =
-    notificationContent.text || "Open the notification to see it.";
-  const notificationLink = notificationContent.link || "/"; // Default to root path if no link provided
+  const notificationText = req.body.text || "Open the notification to see it.";
+  const notificationLink = req.body.link || "/"; // Default to root path if no link provided
 
   console.log(`New notification: "${notificationText}", "${notificationLink}"`);
 
