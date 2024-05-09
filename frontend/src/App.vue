@@ -1,26 +1,33 @@
 <template>
   <div v-if="uploadMode" style="display: flex; flex-direction: column">
     <h2>Upload an image</h2>
-    <div style="display: flex; flex-direction: column">
+    <div style="display: flex; flex-direction: column; text-align: left">
+      <div>Description:</div>
       <input
         type="text"
         v-model="description"
         placeholder="This was my first car!"
         style="margin-bottom: 16px"
       />
+      <div>File:</div>
       <input
         type="file"
         @change="onFileChanged($event)"
         accept="image/*"
         capture
-        style="margin-bottom: 16px"
+        style="margin-bottom: 32px"
       />
-      <input type="button" value="Upload" @click="uploadImage" />
+      <input
+        :disabled="!file"
+        type="button"
+        :value="file ? 'Upload' : 'Select a file before upload.'"
+        @click="uploadImage"
+      />
       <input
         type="button"
         value="Subscribe to updates"
         @click="subscribeToPushNotifications"
-        style="margin-top: 64px"
+        style="margin-top: 128px"
       />
     </div>
   </div>

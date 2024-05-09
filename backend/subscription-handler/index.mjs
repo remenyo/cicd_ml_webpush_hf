@@ -114,10 +114,11 @@ app.post("/new", (req, res) => {
           })
           .catch((error) => {
             console.error(error);
+            throw error;
           });
       } catch (error) {
         console.error("Error parsing JSON:", error);
-        res.status(400).json({ error: "Invalid subscription data" });
+        res.status(400).text("Invalid subscription data");
       }
     });
   } catch (e) {
