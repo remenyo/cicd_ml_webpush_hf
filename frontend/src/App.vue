@@ -176,6 +176,7 @@ async function subscribeToPushNotifications() {
     }
 
     // Register service worker
+    console.log("await navigator.serviceWorker.ready", navigator.serviceWorker)
     const registration = await navigator.serviceWorker.ready;
 
     if (!registration.active)
