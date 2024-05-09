@@ -60,7 +60,7 @@ app.use((req, res, next) => {
 });
 
 app.post("/", (req, res) => {
-  const form = formidable({ multiples: false });
+  const form = formidable({ multiples: false }); // default file size limit is 200mb so it will be enough
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -113,8 +113,7 @@ app.post("/", (req, res) => {
             (err) => {
               if (err) throw err;
               console.log(
-                `The processed file (${
-                  uuid + processedPostFix
+                `The processed file (${uuid + processedPostFix
                 }) has been saved!`
               );
             }

@@ -33,7 +33,7 @@ const subscriptionURL = values.subscriptionURL;
 
 const app = express();
 
-app.use("/api/image", expressHttpProxy(fileStoreURL));
+app.use("/api/image", expressHttpProxy(fileStoreURL, { limit: "10M" }));
 app.use("/api/subscribe", expressHttpProxy(subscriptionURL));
 app.use("/", expressHttpProxy(webpageHostURL)); // Default route for all other paths
 
