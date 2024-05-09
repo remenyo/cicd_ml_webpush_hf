@@ -143,9 +143,10 @@ app.post("/", (req, res) => {
             text: "Someone uploaded a new image.",
             url: `/image/${uuid}`,
           }),
+        }).catch((e) => {
+          console.error(`Notification sending failed: ${e}`);
         });
-      } catch (e) {
-        console.error(`Notification sending failed: ${e}`);
+      } catch {
         // This (notification sending error) is not an "error" that needs to be sent to the client.
       }
     } catch (e) {

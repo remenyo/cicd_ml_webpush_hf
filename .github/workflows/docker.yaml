@@ -7,8 +7,18 @@ on:
     branches: ["main"]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          [
+            "file-store",
+            "image-processor",
+            "subscription-handler",
+            "gateway",
+            "frontend",
+          ]
 
     steps:
       - uses: actions/checkout@v4
@@ -19,12 +29,51 @@ jobs:
       - name: Expose GitHub Runtime
         uses: crazy-max/ghaction-github-runtime@v3
 
-      # - name: Cache Docker layers
-      #   uses: actions/cache@v4
-      #   with:
-      #     save-always: true
-      #     path: /tmp/.buildx-cache
-      #     key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}-backend
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        run: |
+          # Construct path based on service
+          if [[ ${{ matrix.service }} == "frontend" ]]; then
+            build_path="./${{ matrix.service }}"
+            dockerfile_path="./${{ matrix.service }}/Dockerfile"
+          else
+            build_path="./backend/${{ matrix.service }}"
+            dockerfile_path="./backend/${{ matrix.service }}/Dockerfile"
+          fi
+
+          docker buildx build "$build_path" \
+            --file "$dockerfile_path" \
+            --progress plain \
+            --push \
+            -t ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}_cicdhf:latest \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max
+
+          if [[ ${{ matrix.service }} == "frontend" ]]; then
+            mkdir -p ./backend/webpage-host/public
+            tar -xzf ./frontend/dist/dist.tar.gz -C ./backend/webpage-host/public
+          fi
+
+      - name: Copy frontend into webpage-host (frontend only)
+        if: matrix.service == 'frontend'
+        run: |
+          mkdir -p ./backend/webpage-host/public
+          tar -xzf ./frontend/dist/dist.tar.gz -C ./backend/webpage-host/public
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build # This job will run after the 'build' job completes
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -33,27 +82,15 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build and push backend services (adjust names and paths as needed)
-      - name: Build file-store image
-        run: docker buildx build ./backend/file-store --file ./backend/file-store/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/file-store_cicdhf:latest --cache-from type=gha,mode=max --cache-to type=gha
-
-      - name: Build image-processor image
-        run: docker buildx build ./backend/image-processor --file ./backend/image-processor/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/image-processor_cicdhf:latest --cache-from type=gha,mode=max --cache-to type=gha
-
-      - name: Build subscription-handler image
-        run: docker buildx build ./backend/subscription-handler --file ./backend/subscription-handler/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/subscription-handler_cicdhf:latest --cache-from type=gha,mode=max --cache-to type=gha
-
-      - name: Build gateway image
-        run: docker buildx build ./backend/gateway --file ./backend/gateway/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/gateway_cicdhf:latest --cache-from type=gha,mode=max --cache-to type=gha
-
-      - name: Build frontend
-        run: docker buildx build ./frontend --file ./frontend/Dockerfile -o ./frontend/dist --progress plain --cache-from type=gha,mode=max --cache-to type=gha
-
-      - name: Copy frontend into webpage-host
-        run: mkdir ./backend/webpage-host/public && tar -xzf ./frontend/dist/dist.tar.gz -C ./backend/webpage-host/public
-
-      - name: Build webpage-host
-        run: docker buildx build ./backend/webpage-host --file ./backend/webpage-host/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/webpage-host_cicdhf:latest --cache-from type=gha,mode=max --cache-to type=gha
+      - name: Build webpage-host image
+        run: |
+          docker buildx build ./backend/webpage-host \
+            --file ./backend/webpage-host/Dockerfile \
+            --progress plain \
+            --push \
+            -t ghcr.io/${{ github.repository_owner }}/webpage-host_cicdhf:latest \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max
 
       - name: Copy init files over SSH
         uses: appleboy/scp-action@master

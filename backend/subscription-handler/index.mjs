@@ -2,6 +2,7 @@ import { parseArgs } from "util";
 import * as fs from "fs";
 import express from "express";
 import webPush from "web-push";
+import path from "path";
 
 const { values } = parseArgs({
   args: process.argv,
