@@ -96,6 +96,7 @@ app.post("/", (req, res) => {
       const base64Image = img.toString("base64");
 
       await fetch(imageProcessorURL, {
+        signal: AbortSignal.timeout(10_000),
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,6 +136,7 @@ app.post("/", (req, res) => {
         });
       try {
         await fetch(`${subscriptionURL}/notify`, {
+          signal: AbortSignal.timeout(10_000),
           method: "POST",
           headers: {
             "Content-Type": "application/json",

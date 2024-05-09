@@ -116,13 +116,19 @@ const loadImage = async () => {
   const descriptionUrl = `${apiBaseURL}/image/${imageId}_desc`;
 
   try {
-    const imageResponse = await fetch(imageUrl);
+    const imageResponse = await fetch(imageUrl, {
+      signal: AbortSignal.timeout(10_000),
+    });
     const imageBlob = await imageResponse.blob();
 
-    const processedImageResponse = await fetch(processedImageUrl); // Fetch processed image
+    const processedImageResponse = await fetch(processedImageUrl, {
+      signal: AbortSignal.timeout(10_000),
+    }); // Fetch processed image
     const processedImageBlob = await processedImageResponse.blob();
 
-    const descriptionResponse = await fetch(descriptionUrl);
+    const descriptionResponse = await fetch(descriptionUrl, {
+      signal: AbortSignal.timeout(10_000),
+    });
     const descriptionText = await descriptionResponse.text();
 
     image.value =
@@ -151,6 +157,7 @@ const uploadImage = async () => {
 
   try {
     const response = await fetch(`${apiBaseURL}/image`, {
+      signal: AbortSignal.timeout(10_000),
       method: "POST",
       body: formData,
     });
@@ -209,6 +216,7 @@ async function subscribeToPushNotifications() {
 
     // Send subscription to server
     const response = await fetch(`${apiBaseURL}/subscribe/new`, {
+      signal: AbortSignal.timeout(10_000),
       method: "POST",
       body: JSON.stringify(subscription),
       headers: {
