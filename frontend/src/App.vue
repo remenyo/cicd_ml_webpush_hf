@@ -74,7 +74,7 @@ const onFileChanged = ($event) => {
   }
 };
 
-const apiBaseURL = "http://162.55.213.88:3000"; // Set your API base URL
+const apiBaseURL = "https://cicdhf.11010011.xyz:8080";
 
 onMounted(() => {
   updateMode();
