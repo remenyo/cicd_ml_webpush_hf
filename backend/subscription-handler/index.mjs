@@ -84,87 +84,77 @@ function loadSubscriptions() {
 
 // Handle POST requests for new subscriptions on /new
 app.post("/new", (req, res) => {
-  try {
-    console.log(`New subscription.`);
+  console.log(`New subscription.`);
 
-    let subscriptionData = "";
+  let subscriptionData = "";
 
-    req.on("data", (chunk) => {
-      subscriptionData += chunk;
-    });
+  req.on("data", (chunk) => {
+    subscriptionData += chunk;
+  });
 
-    req.on("end", () => {
-      try {
-        const subscription = JSON.parse(subscriptionData);
-        saveSubscription(subscription);
+  req.on("end", () => {
+    try {
+      const subscription = JSON.parse(subscriptionData);
+      saveSubscription(subscription);
 
-        res.status(201).json({});
+      res.status(201).json({});
 
-        // Send a welcome notification
-        const payload = JSON.stringify({
-          title: "Subscribed!",
-          body: "You will see a notification like this if a new image is uploaded.",
-          url: "/",
+      // Send a welcome notification
+      const payload = JSON.stringify({
+        title: "Subscribed!",
+        body: "You will see a notification like this if a new image is uploaded.",
+        url: "/",
+      });
+
+      webPush
+        .sendNotification(subscription, payload)
+        .then(() => {
+          // console.log("Notification sent.")
+        })
+        .catch((error) => {
+          console.error(error);
+          throw error;
         });
-
-        webPush
-          .sendNotification(subscription, payload)
-          .then(() => {
-            // console.log("Notification sent.")
-          })
-          .catch((error) => {
-            console.error(error);
-            throw error;
-          });
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        res.status(400).text("Invalid subscription data");
-      }
-    });
-  } catch (e) {
-    res.status(500).text(`Subscripton failed. (${e})`);
-  }
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      res.status(400).text("Invalid subscription data");
+    }
+  });
 });
 
 // Handle POST requests on /notify to send notifications to all subscribers
 app.post("/notify", (req, res) => {
-  try {
-    console.log(req);
-    const notificationContent = req.body;
+  console.log(req);
+  const notificationContent = req.body;
 
-    const notificationText =
-      notificationContent.text || "Open the notification to see it.";
-    const notificationLink = notificationContent.link || "/"; // Default to root path if no link provided
+  const notificationText =
+    notificationContent.text || "Open the notification to see it.";
+  const notificationLink = notificationContent.link || "/"; // Default to root path if no link provided
 
-    console.log(
-      `New notification: "${notificationText}", "${notificationLink}"`
-    );
+  console.log(`New notification: "${notificationText}", "${notificationLink}"`);
 
-    const payload = JSON.stringify({
-      title: "New image!",
-      body: notificationText,
-      url: notificationLink,
+  const payload = JSON.stringify({
+    title: "New image!",
+    body: notificationText,
+    url: notificationLink,
+  });
+
+  const subscriptions = loadSubscriptions();
+
+  console.log(`Sending ${subscriptions.length} notification(s)`);
+
+  subscriptions.forEach((subscription) => {
+    webPush.sendNotification(subscription, payload).catch((error) => {
+      console.error("Error sending notification:", error);
+      if (err.statusCode === 404 || err.statusCode === 410) {
+        const filepath = path.join(subscriptionsFilePath, item.filename);
+        fs.unlinkSync(filepath);
+        console.log("Subscription has expired or is no longer valid: ", err);
+      }
     });
+  });
 
-    const subscriptions = loadSubscriptions();
-
-    console.log(`Sending ${subscriptions.length} notification(s)`);
-
-    subscriptions.forEach((subscription) => {
-      webPush.sendNotification(subscription, payload).catch((error) => {
-        console.error("Error sending notification:", error);
-        if (err.statusCode === 404 || err.statusCode === 410) {
-          const filepath = path.join(subscriptionsFilePath, item.filename);
-          fs.unlinkSync(filepath);
-          console.log("Subscription has expired or is no longer valid: ", err);
-        }
-      });
-    });
-
-    res.json({ message: "Notifications sent" });
-  } catch (e) {
-    res.status(500).text("Notification sending failed.");
-  }
+  res.json({ message: "Notifications sent" });
 });
 
 app.listen(portNumber, () => {
