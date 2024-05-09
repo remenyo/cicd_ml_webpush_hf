@@ -118,8 +118,11 @@ app.post("/new", (req, res) => {
 
 // Handle POST requests on /notify to send notifications to all subscribers
 app.post("/notify", (req, res) => {
-  const notificationText = req.body.text || "Open the notification to see it.";
-  const notificationLink = req.body.link || "/"; // Default to root path if no link provided
+  const notificationContent = JSON.parse(req.body);
+
+  const notificationText =
+    notificationContent.text || "Open the notification to see it.";
+  const notificationLink = notificationContent.link || "/"; // Default to root path if no link provided
 
   console.log(`New notification: "${notificationText}", "${notificationLink}"`);
 
