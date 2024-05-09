@@ -27,9 +27,11 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Expose GitHub Runtime
+        if: matrix.service != 'frontend'
         uses: crazy-max/ghaction-github-runtime@v3
 
       - name: Login to GitHub Container Registry
+        if: matrix.service != 'frontend'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -54,12 +56,6 @@ jobs:
         if: matrix.service == 'frontend'
         run: docker buildx build ./frontend --file ./frontend/Dockerfile -o ./frontend/dist --progress plain --cache-from type=gha --cache-to type=gha,mode=max
 
-      - name: Copy frontend into webpage-host (frontend only)
-        if: matrix.service == 'frontend'
-        run: |
-          mkdir -p ./backend/webpage-host/public
-          tar -xzf ./frontend/dist/dist.tar.gz -C ./backend/webpage-host/public
-
   deploy:
     runs-on: ubuntu-latest
     needs: build # This job will run after the 'build' job completes
@@ -76,6 +72,14 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Copy frontend into webpage-host
+        run: |
+          mkdir -p ./backend/webpage-host/public
+          tar -xzf ./frontend/dist/dist.tar.gz -C ./backend/webpage-host/public
+
       - name: Build webpage-host image
         run: |
           docker buildx build ./backend/webpage-host \
@@ -85,6 +89,17 @@ jobs:
             -t ghcr.io/${{ github.repository_owner }}/webpage-host_cicdhf:latest \
             --cache-from type=gha \
             --cache-to type=gha,mode=max
+
+      - name: Create vapid_secret dir
+        run: mkdir ./server/vapid_secret
+
+      - name: create VAPID.json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.3
+        with:
+          name: "VAPID.json"
+          json: ${{ secrets.VAPID }}
+          dir: "./server/vapid_secret/"
 
       - name: Copy init files over SSH
         uses: appleboy/scp-action@master
@@ -110,6 +125,5 @@ jobs:
             mkdir images
             mkdir subscriptions
             mkdir vapid_secret
-            echo "${{ secrets.VAPID }}" > ./vapid_secret/VAPID.json
             docker compose pull
             docker compose up -d
