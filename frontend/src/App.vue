@@ -175,12 +175,7 @@ async function subscribeToPushNotifications() {
       return;
     }
 
-    // Register service worker
-    console.log("await navigator.serviceWorker.ready", navigator.serviceWorker)
-    const registration = await navigator.serviceWorker.ready;
-
-    if (!registration.active)
-      registration = await navigator.serviceWorker.register("/sw.js");
+    const registration = await navigator.serviceWorker.register("/sw.js");
 
     // Get subscription
     const subscription = await registration.pushManager.subscribe({
