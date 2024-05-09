@@ -16,6 +16,12 @@
         style="margin-bottom: 16px"
       />
       <input type="button" value="Upload" @click="uploadImage" />
+      <input
+        type="button"
+        value="Subscribe to updates"
+        @click="subscribeToPushNotifications"
+        style="margin-top: 64px"
+      />
     </div>
   </div>
   <div v-else style="display: flex; flex-direction: column">
@@ -142,12 +148,65 @@ const uploadImage = async () => {
       body: formData,
     });
     const imageId = await response.text();
-    window.location.href = `/image/${imageId}`; // Reload with image ID
+    window.location.href = `/image/${imageId}`; // Reload the page with image ID
   } catch (error) {
     console.error("Error uploading image:", error);
     alert("Image upload failed.");
   }
 };
+
+const publicKey =
+  "BNhW-5fIrYsMSfDjOGpMgiBD1w7qJrPB-kHbGmCOrBqOSDImnxmcUlrtbs8WQmuzdcxpbjKVJOOE2VQL5DqNn0E";
+
+async function subscribeToPushNotifications() {
+  // Check for service worker support
+  if (!("serviceWorker" in navigator)) {
+    alert("This browser does not support service workers.");
+    return;
+  }
+
+  try {
+    // Request notification permission
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      alert(
+        "Notification permission denied! Without it, the app cannot send notifications."
+      );
+      return;
+    }
+
+    // Register service worker
+    const registration = await navigator.serviceWorker.ready;
+
+    if (!registration.active)
+      registration = await navigator.serviceWorker.register("/sw.js");
+
+    // Get subscription
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey),
+    });
+
+    // Send subscription to server
+    const response = await fetch(`${apiBaseURL}/subscribe/new`, {
+      method: "POST",
+      body: JSON.stringify(subscription),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      alert("Subscribed to notifications!");
+    } else {
+      console.error("Subscription request failed:", response.status);
+      alert("Subscription failed.");
+    }
+  } catch (error) {
+    console.error("Error subscribing to notifications:", error);
+    alert("Subscription failed.");
+  }
+}
 </script>
 
 <style scoped></style>

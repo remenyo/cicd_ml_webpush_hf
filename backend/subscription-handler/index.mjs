@@ -1,8 +1,8 @@
-import { parseArgs } from "util";
-import * as fs from "fs";
 import express from "express";
-import webPush from "web-push";
+import * as fs from "fs";
 import path from "path";
+import { parseArgs } from "util";
+import webPush from "web-push";
 
 const { values } = parseArgs({
   args: process.argv,
@@ -136,6 +136,9 @@ app.post("/notify", (req, res) => {
   subscriptions.forEach((subscription) => {
     webPush.sendNotification(subscription, payload).catch((error) => {
       console.error("Error sending notification:", error);
+      if (err.statusCode === 404 || err.statusCode === 410) {
+        console.log("Subscription has expired or is no longer valid: ", err);
+      }
     });
   });
 
@@ -143,5 +146,5 @@ app.post("/notify", (req, res) => {
 });
 
 app.listen(portNumber, () => {
-  console.log(`Server started on port ${port}`);
+  console.log(`Server started on port ${portNumber}`);
 });
