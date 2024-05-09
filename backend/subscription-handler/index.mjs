@@ -36,8 +36,6 @@ if (!fs.existsSync(subscriptionsFilePath)) {
   exit(1); // creating a folder would hide an error
 }
 
-// init
-
 const vapidFile = path.join(vapidPath, "VAPID.json");
 
 // Read VAPID keys from the file
@@ -58,7 +56,6 @@ webPush.setVapidDetails(
 );
 
 const app = express();
-
 app.use(express.json());
 
 // Function to save a subscription to a file
@@ -82,7 +79,7 @@ function loadSubscriptions() {
   return subscriptions;
 }
 
-// Handle POST requests for new subscriptions on /new
+// Handle requests for new subscriptions
 app.post("/new", (req, res) => {
   console.log(`New subscription.`);
 
@@ -107,10 +104,10 @@ app.post("/new", (req, res) => {
     });
 });
 
-// Handle POST requests on /notify to send notifications to all subscribers
+// Send notifications to all subscribers
 app.post("/notify", (req, res) => {
   const notificationText = req.body.text || "Open the notification to see it.";
-  const notificationLink = req.body.link || "/"; // Default to root path if no link provided
+  const notificationLink = req.body.link || "/";
 
   console.log(`New notification: "${notificationText}", "${notificationLink}"`);
 
@@ -125,14 +122,19 @@ app.post("/notify", (req, res) => {
   console.log(`Sending ${subscriptions.length} notification(s)`);
 
   subscriptions.forEach((subscription) => {
-    webPush.sendNotification(subscription, payload).catch((error) => {
-      console.error("Error sending notification:", error);
-      if (err.statusCode === 404 || err.statusCode === 410) {
-        const filepath = path.join(subscriptionsFilePath, item.filename);
-        fs.unlinkSync(filepath);
-        console.log("Subscription has expired or is no longer valid: ", err);
-      }
-    });
+    webPush
+      .sendNotification(subscription.subscription, payload)
+      .catch((error) => {
+        console.error("Error sending notification:", error);
+        if (err.statusCode === 404 || err.statusCode === 410) {
+          const filepath = path.join(
+            subscriptionsFilePath,
+            subscription.filename
+          );
+          fs.unlinkSync(filepath);
+          console.log("Subscription has expired or is no longer valid: ", err);
+        }
+      });
   });
 
   res.json({ message: "Notifications sent" });

@@ -36,6 +36,19 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Load VAPID keys from secret
+        if: matrix.service == 'webpage-host'
+        id: vapid_keys
+        env:
+          VAPID_JSON: ${{ secrets.VAPID }}
+        run: |
+          echo "::set-output name=publicKey::$(echo $VAPID_JSON | jq -r '.publicKey')"
+
+      - name: Update publicKey in App.vue
+        if: matrix.service == 'webpage-host'
+        run: |
+          sed -i "s/const publicKey = \".*\";/const publicKey = \"${{ steps.vapid_keys.outputs.publicKey }}\";/" ./frontend/src/App.vue
+
       - name: Build frontend before webpage-host
         if: matrix.service == 'webpage-host'
         run: |

@@ -169,11 +169,11 @@ const uploadImage = async () => {
   }
 };
 
-const publicKey =
-  "BNhW-5fIrYsMSfDjOGpMgiBD1w7qJrPB-kHbGmCOrBqOSDImnxmcUlrtbs8WQmuzdcxpbjKVJOOE2VQL5DqNn0E";
+// prettier-ignore
+const publicKey = "< placeholder, see github action's 'Update publicKey in App.vue' task. >";
 
 // Web-Push
-// Public base64 to Uint
+// Public base64 to Uint src: https://gist.github.com/Klerith/80abd742d726dd587f4bd5d6a0ab26b6
 function urlBase64ToUint8Array(base64String) {
   var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   var base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
