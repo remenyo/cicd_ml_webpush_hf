@@ -90,7 +90,7 @@ app.post("/", (req, res) => {
       const img = fs.readFileSync(image[0].filepath);
       fs.writeFileSync(imageFilePath + uuid, img, (err) => {
         if (err) throw err;
-        // console.log("The file has been saved!");
+        console.log(`The file (${uuid}) has been saved!`);
       });
 
       const base64Image = img.toString("base64");
@@ -111,7 +111,11 @@ app.post("/", (req, res) => {
             Buffer.from(detectedImageBase64, "base64"),
             (err) => {
               if (err) throw err;
-              // console.log("The file has been saved!");
+              console.log(
+                `The processed file (${
+                  uuid + processedPostFix
+                }) has been saved!`
+              );
             }
           );
 
@@ -122,7 +126,9 @@ app.post("/", (req, res) => {
               description[0],
               (err) => {
                 if (err) throw err;
-                // console.log("The file has been saved!");
+                console.log(
+                  `The description (${uuid + descPostFix}) has been saved!`
+                );
               }
             );
           }
@@ -138,7 +144,7 @@ app.post("/", (req, res) => {
             url: `/image/${uuid}`,
           }),
         });
-      } catch {
+      } catch (e) {
         console.error(`Notification sending failed: ${e}`);
         // This (notification sending error) is not an "error" that needs to be sent to the client.
       }

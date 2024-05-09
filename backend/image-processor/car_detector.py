@@ -15,6 +15,7 @@ def health():
 
 @app.route("/detect_cars", methods=["POST"])
 def detect_cars():
+    print("New image to detect cars on...")
     # Get image data from request
     image_data = request.get_json()["image"]
     image_bytes = base64.b64decode(image_data.encode("utf-8"))
@@ -31,6 +32,7 @@ def detect_cars():
     _, buffer = cv2.imencode('.jpg', image)
     image_base64 = base64.b64encode(buffer).decode("utf-8")
 
+    print("Car detection done.")
     return jsonify({"image": image_base64})
 
 if __name__ == "__main__":

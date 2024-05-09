@@ -16,12 +16,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          save-always: true
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}-backend
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      # - name: Cache Docker layers
+      #   uses: actions/cache@v4
+      #   with:
+      #     save-always: true
+      #     path: /tmp/.buildx-cache
+      #     key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}-backend
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -32,25 +35,25 @@ jobs:
 
       # Build and push backend services (adjust names and paths as needed)
       - name: Build file-store image
-        run: docker buildx build ./backend/file-store --file ./backend/file-store/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/file-store_cicdhf:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
+        run: docker buildx build ./backend/file-store --file ./backend/file-store/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/file-store_cicdhf:latest --cache-from type=gha,mode=max --cache-to type=gha
 
       - name: Build image-processor image
-        run: docker buildx build ./backend/image-processor --file ./backend/image-processor/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/image-processor_cicdhf:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
+        run: docker buildx build ./backend/image-processor --file ./backend/image-processor/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/image-processor_cicdhf:latest --cache-from type=gha,mode=max --cache-to type=gha
 
       - name: Build subscription-handler image
-        run: docker buildx build ./backend/subscription-handler --file ./backend/subscription-handler/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/subscription-handler_cicdhf:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
+        run: docker buildx build ./backend/subscription-handler --file ./backend/subscription-handler/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/subscription-handler_cicdhf:latest --cache-from type=gha,mode=max --cache-to type=gha
 
       - name: Build gateway image
-        run: docker buildx build ./backend/gateway --file ./backend/gateway/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/gateway_cicdhf:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
+        run: docker buildx build ./backend/gateway --file ./backend/gateway/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/gateway_cicdhf:latest --cache-from type=gha,mode=max --cache-to type=gha
 
       - name: Build frontend
-        run: docker buildx build ./frontend --file ./frontend/Dockerfile -o ./frontend/dist --progress plain --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
+        run: docker buildx build ./frontend --file ./frontend/Dockerfile -o ./frontend/dist --progress plain --cache-from type=gha,mode=max --cache-to type=gha
 
       - name: Copy frontend into webpage-host
         run: mkdir ./backend/webpage-host/public && tar -xzf ./frontend/dist/dist.tar.gz -C ./backend/webpage-host/public
 
       - name: Build webpage-host
-        run: docker buildx build ./backend/webpage-host --file ./backend/webpage-host/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/webpage-host_cicdhf:latest --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache
+        run: docker buildx build ./backend/webpage-host --file ./backend/webpage-host/Dockerfile --progress plain --push -t ghcr.io/${{ github.repository_owner }}/webpage-host_cicdhf:latest --cache-from type=gha,mode=max --cache-to type=gha
 
       - name: Copy init files over SSH
         uses: appleboy/scp-action@master

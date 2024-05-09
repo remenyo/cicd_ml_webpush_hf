@@ -1,4 +1,5 @@
 import { parseArgs } from "util";
+import * as fs from "fs";
 import express from "express";
 import webPush from "web-push";
 
@@ -77,6 +78,8 @@ function loadSubscriptions() {
 
 // Handle POST requests for new subscriptions on /new
 app.post("/new", (req, res) => {
+  console.log(`New subscription.`);
+
   let subscriptionData = "";
 
   req.on("data", (chunk) => {
@@ -97,9 +100,14 @@ app.post("/new", (req, res) => {
         url: "/",
       });
 
-      webPush.sendNotification(subscription, payload).catch((error) => {
-        console.error(error);
-      });
+      webPush
+        .sendNotification(subscription, payload)
+        .then(() => {
+          // console.log("Notification sent.")
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     } catch (error) {
       console.error("Error parsing JSON:", error);
       res.status(400).json({ error: "Invalid subscription data" });
@@ -121,6 +129,8 @@ app.post("/notify", (req, res) => {
   });
 
   const subscriptions = loadSubscriptions();
+
+  console.log(`Sending ${subscriptions.length} notification(s)`);
 
   subscriptions.forEach((subscription) => {
     webPush.sendNotification(subscription, payload).catch((error) => {
