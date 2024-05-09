@@ -34,7 +34,7 @@ const subscriptionURL = values.subscriptionURL;
 const app = express();
 
 // Use express-http-proxy to create proxy middleware
-app.use("/images", expressHttpProxy(fileStoreURL));
+app.use("/image", expressHttpProxy(fileStoreURL));
 app.use("/subscribe", expressHttpProxy(subscriptionURL));
 app.use("/", expressHttpProxy(webpageHostURL)); // Default route for all other paths
 
