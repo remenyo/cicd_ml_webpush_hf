@@ -169,7 +169,7 @@ jobs:
             # --- Restart Services in Target Environment ---
               for service in gateway file-store image-processor subscription-handler webpage-host; do
               echo "Restarting service: ${service}-${TARGET_ENV}"
-              docker-compose restart "${service}-${TARGET_ENV}"
+              docker compose restart "${service}-${TARGET_ENV}"
               done
               
             mv -f ./latest_environment.txt latest
