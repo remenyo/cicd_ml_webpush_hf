@@ -1,52 +1,98 @@
+version: "3.8"
+
 networks:
   backend-network:
 
 services:
-  gateway:
-    container_name: gateway
-    image: ghcr.io/remenyo/gateway_cicdhf
-    command: node index.mjs --port 3000 --fileStoreURL http://file-store:3000 --webpageHostURL http://webpage-host:3000 --subscriptionURL http://subscription-handler:3000
+  proxy:
+    image: ghcr.io/remenyo/proxy_cicdhf
+    command: node index.mjs --port 80
     ports:
-      - "80:3000"
+      - "80:80" # Main proxy port
+    volumes:
+      - ./latest:/latest
+    depends_on:
+      - gateway-blue
+      - gateway-green
+
+  gateway-blue:
+    image: ghcr.io/remenyo/gateway_cicdhf:blue
+    command: node index.mjs --port 3000 --fileStoreURL http://file-store-blue:3000 --webpageHostURL http://webpage-host-blue:3000 --subscriptionURL http://subscription-handler-blue:3000
     networks:
       - backend-network
     depends_on:
-      - file-store
-      - webpage-host
+      - file-store-blue
+      - webpage-host-blue
 
-  webpage-host:
-    container_name: webpage-host
-    image: ghcr.io/remenyo/webpage-host_cicdhf
-    # command not needed, as it is the default: node index.mjs --port 3000 --staticFilePath ./public
+  gateway-green:
+    image: ghcr.io/remenyo/gateway_cicdhf:green
+    command: node index.mjs --port 3000 --fileStoreURL http://file-store-green:3000 --webpageHostURL http://webpage-host-green:3000 --subscriptionURL http://subscription-handler-green:3000
     networks:
       - backend-network
     depends_on:
-      - file-store
+      - file-store-green
+      - webpage-host-green
 
-  file-store:
-    container_name: file-store
-    image: ghcr.io/remenyo/file-store_cicdhf
-    command: node index.mjs --imageProcessorURL http://image-processor:3000/detect_cars --subscriptionURL http://subscription-handler:3000
+  # Blue Environment Services
+  webpage-host-blue:
+    image: ghcr.io/remenyo/webpage-host_cicdhf:blue
+    networks:
+      - backend-network
+    depends_on:
+      - file-store-blue
+
+  file-store-blue:
+    image: ghcr.io/remenyo/file-store_cicdhf:blue
+    command: node index.mjs --imageProcessorURL http://image-processor-blue:3000/detect_cars --subscriptionURL http://subscription-handler-blue:3000
     volumes:
       - ./images:/images
     networks:
       - backend-network
     depends_on:
-      - image-processor
-      - subscription-handler
+      - image-processor-blue
+      - subscription-handler-blue
 
-  image-processor:
-    container_name: image-processor
-    image: ghcr.io/remenyo/image-processor_cicdhf
+  image-processor-blue:
+    image: ghcr.io/remenyo/image-processor_cicdhf:blue
     networks:
       - backend-network
 
-  subscription-handler:
-    container_name: subscription-handler
-    image: ghcr.io/remenyo/subscription-handler_cicdhf
+  subscription-handler-blue:
+    image: ghcr.io/remenyo/subscription-handler_cicdhf:blue
     volumes:
       - ./subscriptions:/subscriptions
       - ./vapid_secret:/secrets
-    # command not needed as it is the default: node index.mjs
+    networks:
+      - backend-network
+
+  # Green Environment Services (identical to blue, but with different tags)
+  webpage-host-green:
+    image: ghcr.io/remenyo/webpage-host_cicdhf:green
+    networks:
+      - backend-network
+    depends_on:
+      - file-store-green
+
+  file-store-green:
+    image: ghcr.io/remenyo/file-store_cicdhf:green
+    command: node index.mjs --imageProcessorURL http://image-processor-green:3000/detect_cars --subscriptionURL http://subscription-handler-green:3000
+    volumes:
+      - ./images:/images
+    networks:
+      - backend-network
+    depends_on:
+      - image-processor-green
+      - subscription-handler-green
+
+  image-processor-green:
+    image: ghcr.io/remenyo/image-processor_cicdhf:green
+    networks:
+      - backend-network
+
+  subscription-handler-green:
+    image: ghcr.io/remenyo/subscription-handler_cicdhf:green
+    volumes:
+      - ./subscriptions:/subscriptions
+      - ./vapid_secret:/secrets
     networks:
       - backend-network

@@ -58,6 +58,8 @@ webPush.setVapidDetails(
 const app = express();
 app.use(express.json());
 
+app.use('/health', async (_req, res) => { res.status(200).send('OK') })
+
 // Function to save a subscription to a file
 function saveSubscription(subscription) {
   const filename = `subscription-${Date.now()}.json`;

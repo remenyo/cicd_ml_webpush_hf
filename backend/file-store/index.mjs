@@ -54,10 +54,35 @@ const app = express();
 
 app.use(cors());
 
-app.use((req, res, next) => {
+app.use((_req, _res, next) => {
   // console.log(req.method, req.url); // debug logging
   next();
 });
+
+app.use('/health', async (_req, res) => {
+  try {
+    // Check health of services
+    const healthCheckPromises = [
+      fetch(`${imageProcessorURL}/health`, {
+        signal: AbortSignal.timeout(4_000)
+      })
+    ]
+
+    const responses = await Promise.all(healthCheckPromises);
+    // Check if all responses are ok
+    const isHealthy = responses.every(response => response.ok);
+
+    if (isHealthy) {
+      res.status(200).send('OK');
+    } else {
+      res.status(500).send('Error: Downstream service issue');
+    }
+  } catch (error) {
+    console.error('Error during health check:', error);
+    res.status(500).send('Error: Health check failed');
+  }
+});
+
 
 app.post("/", (req, res) => {
   const form = formidable({ multiples: false }); // default file size limit is 200mb so it will be enough

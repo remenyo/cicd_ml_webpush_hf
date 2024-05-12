@@ -1,7 +1,7 @@
 = Felhők hálózati szolgáltatásai laboratórium * BMEVITMMB11-HU
 
 
-Házi feladat - Remény Olivér - IEY82F - 2024.04.28.
+Házi feladat - Remény Olivér - IEY82F - 2024.05.12.
 
 == Röviden:
 
@@ -62,14 +62,12 @@ toc::[]
 
 === 3. Objektumfelismerés képeken (ML)
 
-* **Technológia**: Yolo objektumfelismerő modell
+* **Technológia**: OpenCV objektumfelismerő modell
 * **Funkcionalitás**:
   ** Képek nevének fogadása http apin keresztül
   ** Képek beolvasása fájlrendszerből
   ** Képeken autó alakú objektumok bekeretezése, opcionálisan címkézése
   ** "Keretezett" képek mentése fájlrendszerbe.
-
-Megjegyzés: Egy potenciális megoldást mutat be ez a blogpost: (https://dev.to/andreygermanov/how-to-create-yolov8-based-object-detection-web-service-using-python-julia-nodejs-javascript-go-and-rust-4o8e)
 
 === 4. Üzenőrendszer
 
@@ -77,8 +75,6 @@ Megjegyzés: Egy potenciális megoldást mutat be ez a blogpost: (https://dev.to
 * **Funkcionalitás**:
   ** Feliratkozók nyilvántartása (fájlrendszerben tárolt lista segítségével)
   ** Belső esemény (feltöltés és felismerés) hatására az összes feliratkozó értesítése új feltöltésről
-
-Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: (https://web.dev/articles/sending-messages-with-web-push-libraries)
 
 === 5. CI/CD rendszer
 
@@ -88,8 +84,8 @@ Megjegyzés: Egy potenciális megoldást mutat be ez a blogposzt: (https://web.d
   ** Imagek feltöltése a GitHub(vagy DockerHub) Container Registry-be
     *** Ennek a megoldásáról szól ez a bejegyzés: (https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
   ** Egy távoli szerveren futó docker compose példány utasítása, hogy töltse le az összes új image-t, és frissítse a futó konténereit az új verziókkal.
-    *** Ennek a megoldásáról szól ez a bejegyzés: (https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
-    *** Ez pedig Github Actions specifikus: (https://github.com/marketplace/actions/docker-compose-remote-deploy)
+    *** Ennek a megoldásáról szól ez a bejegyzés: (https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/) (nem használtam)
+    *** Ez pedig Github Actions specifikus: (https://github.com/marketplace/actions/docker-compose-remote-deploy) (nem használtam)
 
 // pagebreak
 <<<
@@ -109,35 +105,38 @@ A kiszolgáló egy egyszerű NodeJS Express szerver (webpage-host backend servic
 
 A backend az alábbi részekből áll:
 
-* webpage-host: weboldalt kiszolgáló program (kész)
-* gateway: a weboldal és az alábbi szolgáltatások közötti közvetítő (WIP)
-* file-store: képek mentése és letöltése (kész, egyelőre ebben van a gateway kód is)
-* image-processor: autó alakú objektumok felismerése (kész, csak gagyi, opencv haar cascade car detection)
-* subscription-handler: feliratkozást kezelő rendszer (WIP)
+* proxy: a gatewayek között váltó program
+* gateway: a weboldal és az alábbi szolgáltatások közötti közvetítő
+* webpage-host: weboldalt kiszolgáló program
+* file-store: képek mentése és letöltése
+* subscription-handler: feliratkozást kezelő rendszer
+* image-processor: autó alakú objektumok felismerése
+
+
 
 Minden szolgáltatás a 3000-es porton érhető el alapértelmezetten, de a működés során minimum két port szükséges, mert nem a "backend" szolgálja ki a frontendet jelenleg.
 
-A webpage-host 80-as porton szolgál ki.
-A file-store a 3000-es porton érhető el.
-Az image-processor-nak nem kell kifelé elérhetőnek lennie így szintén a 3000-es porton működik alapból.
+A szolgaáltatás a 80-as porton érhető el ki.
 
-==== Docker
+=== 3. Docker
 
-Minden szolgáltatás egy-egy docker image.
+A Docker Compose kezeli a konténerizált alkalmazás telepítését.
+A docker-compose.yaml fájl definiálja a szolgáltatásokat (konténereket) és azok konfigurációját.
+Az image-ket a GHCR-ről szedi le, annak hatására hogy a Github Actions SSH-n szól a szervernek, hogy pullolja.
 
-==== Compose
+A blue-green telepítés stratégiát alkalmazok a zökkenőmentes frissítések és a gyors visszaállítás érdekében:
 
-A Docker Image-ket a Docker Compose futtatja. Az image-ket a GHCR-ről szedi le, annak hatására hogy a Github Actions SSH-n szól a szervernek, hogy pullolja.
+* Két Környezet: Két különálló környezet: "blue" és "green"
+* Proxy: A proxy szerver kezeli a bejövő forgalmat és irányítja azt az aktuálisan aktív környezetbe.
+* Healthcheck: A proxy folyamatosan figyeli mindkét környezet állapotát, és automatikusan átvált a másik környezetre, ha az aktív környezet meghibásodik.
 
 === 3. CI/CD rendszer
 
 Források:
 
-* How to deploy on remote Docker hosts with docker-compose (https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/)
-* Docker Compose Remote Action (https://github.com/marketplace/actions/docker-compose-remote-deploy)
 * Publishing and installing a package with GitHub Actions (https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token)
 
-Az alábbi szekvenciadiagramn bemutatja hogy hogyan fog lefutni a végső CICD folyamat:
+Az alábbi szekvenciadiagramn bemutatja hogy hogyan fut a CICD folyamat:
 [mermaid, width=3500]
 ....
 include::cicd_sequencediagram.mermaid[]
@@ -146,10 +145,5 @@ include::cicd_sequencediagram.mermaid[]
 
 
 A renderer dockerfile asciidoctort használ. Ezt a technológiát alkalmaztam a szakdolgozatomban, és az a tervem hogy így fogom megírni a diplomatervem is.
-
-// [source,dockerfile]
-// ....
-// include::Dockerfile[]
-// ....
 
 Egy yaml (documentation.yaml) kirendereli ezt a dokumentumot és release-be teszi a PDF-et, a másik (docker.yaml) pedig megépíti az imageket, feltölti őket a ghcr-re, majd frissíti a szerveren a docker-compose.yaml-t.

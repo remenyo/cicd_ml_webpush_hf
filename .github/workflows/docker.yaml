@@ -7,12 +7,39 @@ on:
     branches: ["main"]
 
 jobs:
+  determine-target:
+    runs-on: ubuntu-latest
+    outputs:
+      target: ${{ steps.determine-target.outputs.target }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Determine deployment target
+        id: determine-target
+        run: |
+          current_environment=$(cat ./server/latest_environment.txt)
+          if [[ "$current_environment" == "blue" ]]; then
+            echo "::set-output name=target::green"
+          else
+            echo "::set-output name=target::blue"
+          fi
+      - name: Update latest_environment.txt
+        run: echo "${{ steps.determine-target.outputs.target }}" > ./server/latest_environment.txt
+      - name: Commit and push changes
+        run: |
+          git config user.name 'GitHub Actions'
+          git config user.email 'actions@github.com'
+          git add .
+          git commit -m "Update active environment"
+          git push origin HEAD:${{ github.ref }}
+
   build:
-    runs-on: self-hosted
+    needs: determine-target
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         service:
           [
+            "proxy",
             "file-store",
             "image-processor",
             "subscription-handler",
@@ -65,7 +92,7 @@ jobs:
         run: |
           build_path="./backend/${{ matrix.service }}"
           dockerfile_path="./backend/${{ matrix.service }}/Dockerfile"
-
+          # Always push latest
           docker buildx build "$build_path" \
             --file "$dockerfile_path" \
             --progress plain \
@@ -73,10 +100,28 @@ jobs:
             -t ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}_cicdhf:latest \
             --cache-from type=gha \
             --cache-to type=gha,mode=max
+          # Conditionally push blue or green
+          if [[ "${{ needs.determine-target.outputs.target }}" == "blue" ]]; then
+            docker buildx build "$build_path" \
+              --file "$dockerfile_path" \
+              --progress plain \
+              --push \
+              -t ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}_cicdhf:blue \
+              --cache-from type=gha \
+              --cache-to type=gha,mode=max
+          else
+            docker buildx build "$build_path" \
+              --file "$dockerfile_path" \
+              --progress plain \
+              --push \
+              -t ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}_cicdhf:green \
+              --cache-from type=gha \
+              --cache-to type=gha,mode=max
+          fi
 
   deploy:
-    runs-on: self-hosted
-    needs: build # This job will run after the 'build' job completes
+    runs-on: ubuntu-latest
+    needs: build
     steps:
       - uses: actions/checkout@v4
 
@@ -115,5 +160,16 @@ jobs:
             mkdir images
             mkdir subscriptions
             mkdir vapid_secret
-            docker compose pull
-            docker compose up -d
+            mkdir latest
+
+            # Determine target environment 
+            TARGET_ENV=$(cat ./latest_environment.txt)
+            echo "Target environment: $TARGET_ENV"
+
+            # --- Restart Services in Target Environment ---
+              for service in gateway file-store image-processor subscription-handler webpage-host; do
+              echo "Restarting service: ${service}-${TARGET_ENV}"
+              docker-compose restart "${service}-${TARGET_ENV}"
+              done
+              
+            mv -f ./latest_environment.txt latest
