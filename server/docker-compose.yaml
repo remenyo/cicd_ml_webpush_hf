@@ -10,6 +10,8 @@ services:
     command: node index.mjs --port 80
     ports:
       - "80:80" # Main proxy port
+    networks:
+      - backend-network
     volumes:
       - ./latest:/latest
     depends_on:
