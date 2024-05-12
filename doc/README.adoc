@@ -23,6 +23,8 @@ image::actions1.png[title="Actions minden pushra lefut." caption="{counter2:figu
 image::actions2.png[title="Egy futás részletei" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 image::upload_image.png[title="Feltöltés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 image::processed.png[title="Megjelenítés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::notification.png[title="Értesítés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::notification2.png[title="Telefonos értesítés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 
 == Áttekintés, specifikáció
 
