@@ -50,7 +50,7 @@ services:
   file-store-blue:
     container_name: file-store-blue
     image: ghcr.io/remenyo/file-store_cicdhf:blue
-    command: node index.mjs --imageProcessorURL http://image-processor-blue:3000/detect_cars --subscriptionURL http://subscription-handler-blue:3000
+    command: node index.mjs --imageProcessorURL http://image-processor-blue:3000 --subscriptionURL http://subscription-handler-blue:3000
     volumes:
       - ./images:/images
     networks:
@@ -86,7 +86,7 @@ services:
   file-store-green:
     container_name: file-store-green
     image: ghcr.io/remenyo/file-store_cicdhf:green
-    command: node index.mjs --imageProcessorURL http://image-processor-green:3000/detect_cars --subscriptionURL http://subscription-handler-green:3000
+    command: node index.mjs --imageProcessorURL http://image-processor-green:3000 --subscriptionURL http://subscription-handler-green:3000
     volumes:
       - ./images:/images
     networks:

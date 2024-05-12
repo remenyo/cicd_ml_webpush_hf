@@ -120,7 +120,7 @@ app.post("/", (req, res) => {
 
       const base64Image = img.toString("base64");
 
-      await fetch(imageProcessorURL, {
+      await fetch(`${imageProcessorURL}/detect_cars`, {
         signal: AbortSignal.timeout(10_000),
         method: "POST",
         headers: {
