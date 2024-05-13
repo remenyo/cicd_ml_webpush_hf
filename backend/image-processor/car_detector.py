@@ -4,10 +4,16 @@ from flask import Flask, request, jsonify
 import cv2
 import base64
 import numpy as np
+import logging
 
 app = Flask(__name__)
 
+
 car_cascade = cv2.CascadeClassifier("cars.xml")  # Load the car cascade file
+
+# Disable the default Flask request logging
+log = logging.getLogger("werkzeug")
+log.setLevel(logging.ERROR)  # Set to ERROR to suppress INFO and DEBUG messages
 
 
 @app.route("/health", methods=["GET"])
