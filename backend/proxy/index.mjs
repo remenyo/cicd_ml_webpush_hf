@@ -16,15 +16,15 @@ const { values } = parseArgs({
 		},
 		latestEnvFilename: {
 			type: 'string',
-			default: 'latest/latest_environment.txt', // Seconds
+			default: 'latest/latest_environment.txt',
 		},
 		blueGatewayUrl: {
 			type: 'string',
-			default: 'http://gateway-blue:3000', // Seconds
+			default: 'http://gateway-blue:3000',
 		},
 		greenGatewayUrl: {
 			type: 'string',
-			default: 'http://gateway-green:3000', // Seconds
+			default: 'http://gateway-green:3000',
 		},
 	},
 	strict: true,
@@ -37,17 +37,15 @@ const latestEnvFilename = values.latestEnvFilename;
 const blueGatewayUrl = values.blueGatewayUrl;
 const greenGatewayUrl = values.greenGatewayUrl;
 
-let currentGateway = blueGatewayUrl;
-let nextGateway = greenGatewayUrl;
-let healthCheckSuccessCount = 0;
-let switchoverTimeout = null;
-let lastHealthyGateway = currentGateway; // Keep track of the last known healthy gateway
+let currentGateway = blueGatewayUrl; // Initial gateway
+let healthCheckTimeout = null;
+let switchScheduled = false;
 
 // Function to check the health of a gateway
 async function checkHealth(gatewayUrl) {
 	try {
 		const response = await fetch(`${gatewayUrl}/health`, {
-			signal: AbortSignal.timeout(4_000)
+			signal: AbortSignal.timeout(4_000),
 		});
 		return response.ok;
 	} catch (error) {
@@ -56,31 +54,14 @@ async function checkHealth(gatewayUrl) {
 	}
 }
 
-function switchGateways() {
-	lastHealthyGateway = currentGateway; // Update the last healthy gateway
-	console.log(`Switching from ${currentGateway} to ${nextGateway}`);
-	currentGateway = nextGateway;
-	healthCheckSuccessCount = 0;
-	switchoverTimeout = null;
-}
-
-function rollbackToLastHealthy() {
-	console.log(`Rolling back from ${currentGateway} to ${lastHealthyGateway}`);
-	currentGateway = lastHealthyGateway;
-	healthCheckSuccessCount = 0;
-	switchoverTimeout = null;
-}
-
-// Function to update gateways based on current_environment.txt
-function updateGateways() {
+// Function to update the current gateway based on the latestEnvFilename
+function updateCurrentGateway() {
 	try {
 		const data = fs.readFileSync(latestEnvFilename, 'utf-8').trim();
 		if (data === 'blue') {
 			currentGateway = blueGatewayUrl;
-			nextGateway = greenGatewayUrl;
 		} else if (data === 'green') {
 			currentGateway = greenGatewayUrl;
-			nextGateway = blueGatewayUrl;
 		} else {
 			console.error(`Invalid environment in ${latestEnvFilename}`);
 		}
@@ -89,40 +70,85 @@ function updateGateways() {
 	}
 }
 
-updateGateways(); // Initialize gateways on startup
+if (checkHealth(currentGateway)) {
+	console.log('Initial gateway is healthy.');
+} else {
+	console.log('Initial gateway is unhealthy.');
+}
 
 // Health check loop
 setInterval(async () => {
-	const isNextGatewayHealthy = await checkHealth(nextGateway);
+	const desiredGateway = await getDesiredGateway();
+	const isCurrentHealthy = await checkHealth(currentGateway);
 
-	if (isNextGatewayHealthy) {
-		healthCheckSuccessCount++;
-		console.log(
-			`Next gateway healthy (${healthCheckSuccessCount} consecutive successes)`
-		);
+	if (desiredGateway === currentGateway) {
+		// Currently on the desired gateway
 
-		if (healthCheckSuccessCount >= 2 && !switchoverTimeout) {
-			switchoverTimeout = setTimeout(
-				switchGateways,
-				switchoverDelay * 1000
-			);
-			console.log(`Switch scheduled in ${switchoverDelay} seconds`);
+		if (!isCurrentHealthy) {
+			// Current gateway is not healthy, check other immediately
+			console.log('Current gateway is unhealthy, checking the other gateway...');
+			const isOtherHealthy = await checkHealth(getOtherGateway(currentGateway));
+			if (isOtherHealthy) {
+				// Other gateway is healthy, switch immediately
+				console.log('Other gateway is healthy, switching...');
+				currentGateway = getOtherGateway(currentGateway);
+			} else {
+				// Other gateway is also unhealthy, wait and retry
+				console.log(
+					'Other gateway is also unhealthy, waiting and retrying...'
+				);
+			}
+		} else {
+			// Current gateway is healthy, do nothing (wait and recheck)
 		}
 	} else {
-		healthCheckSuccessCount = 0;
-		console.log('Next gateway unhealthy');
-		if (switchoverTimeout) {
-			clearTimeout(switchoverTimeout);
-			switchoverTimeout = null;
-			console.log('Switch canceled');
+		// Currently on the wrong gateway
+
+		const isOtherHealthy = await checkHealth(getOtherGateway(currentGateway));
+		if (isOtherHealthy) {
+			// Other gateway is healthy, schedule a switchover
+			if (!switchScheduled) {
+				console.log(
+					`Other gateway is healthy, scheduling a switchover in ${switchoverDelay} seconds...`
+				);
+				switchScheduled = true;
+				healthCheckTimeout = setTimeout(() => {
+					currentGateway = getOtherGateway(currentGateway);
+					switchScheduled = false;
+					console.log('Switched to the desired gateway.');
+				}, switchoverDelay * 1000);
+			}
+		} else {
+			// Other gateway is unhealthy, do not switch
+			console.log(
+				'Other gateway is unhealthy, not switching (waiting for it to become healthy)'
+			);
+			if (switchScheduled) {
+				clearTimeout(healthCheckTimeout);
+				switchScheduled = false;
+			}
 		}
 	}
-}, 5000);
+}, 5000); // Check every 5 seconds
+
+function getDesiredGateway() {
+	try {
+		const data = fs.readFileSync(latestEnvFilename, 'utf-8').trim();
+		return data === 'blue' ? blueGatewayUrl : greenGatewayUrl;
+	} catch (error) {
+		console.error(`Error reading ${latestEnvFilename}:`, error);
+		return currentGateway; // Stay on the current gateway if there is an error
+	}
+}
+
+function getOtherGateway(currentGateway) {
+	return currentGateway === blueGatewayUrl ? greenGatewayUrl : blueGatewayUrl;
+}
 
 const app = express();
 
 // Proxy all other requests to the current gateway
-app.use('/', expressHttpProxy(currentGateway));
+app.use('/', expressHttpProxy(currentGateway, { limit: "200mb" }));
 
 app.listen(proxyPort, () => {
 	console.log(`Proxy server listening on port ${proxyPort}`);

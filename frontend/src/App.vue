@@ -14,7 +14,6 @@
         type="file"
         @change="onFileChanged($event)"
         accept="image/*"
-        capture
         style="margin-bottom: 32px"
       />
       <input
