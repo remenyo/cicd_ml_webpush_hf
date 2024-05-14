@@ -9,7 +9,7 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: body,
-    data: { url },
+    data: { url: url },
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });

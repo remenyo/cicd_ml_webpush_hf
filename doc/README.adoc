@@ -25,6 +25,7 @@ image::upload_image.png[title="Feltöltés" caption="{counter2:figure}{counter:f
 image::processed.png[title="Megjelenítés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 image::Notification.png[title="Értesítés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 image::notification2.png[title="Telefonos értesítés" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::bluegreen.png[title="Blue Green stack váltás" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 
 == Áttekintés, specifikáció
 
@@ -149,6 +150,29 @@ A blue-green stratégiát alkalmazok a zökkenőmentes frissítések és a gyors
 * Két különálló, párhuzamosan futó környezet: "blue" és "green"
 * Proxy: A proxy szerver kezeli a bejövő forgalmat és irányítja azt az aktuálisan aktív környezetbe.
 * Healthcheck: A proxy folyamatosan figyeli mindkét környezet állapotát, és automatikusan átvált a másik környezetre, ha az aktív környezet meghibásodik.
+
+image::bluegreen.png[title="Blue Green stack váltás" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+
+Mi látszik itt?
+
+* blue van healthcheckelve folyamtosan - az az aktuálisan futó stack
+* webpage host green frissült (előtte a többi is)
+* frissül az anv file, ami miatt a proxy elkezdi a greent is healthcheck-elni
+* az is healthy, így hamarosan átvált a proxy
+* végig monitorozza a futó és a következő stacket.
+* az időzítő végén átvált a green-re a proxy, és onnantól a blue-val bármi történhet.
+
+image::proxy_auto_switch_on_error.png[title="Blue Green stack váltás" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+
+Mi látszik itt?
+
+* A Blue fut, de elhal valami benne.
+* Proxy negatív választ kap a gatewaytől a helathcheckre
+* Proxy megnézi a green stacket: megy
+* Proxy nem vár, azonnal átvált.
+* Green az aktív és ezt healthcheckeli ezután
+* Mivel a Blue az újabb stack, újra ránéz a proxy hogy most hátha jó már: igen.
+* Vár 30mp-t, majd visszavált green-ről blue-ra.
 
 === 4. CI/CD rendszer
 
