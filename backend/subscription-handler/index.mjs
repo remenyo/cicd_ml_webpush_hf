@@ -109,14 +109,14 @@ app.post("/new", (req, res) => {
 // Send notifications to all subscribers
 app.post("/notify", (req, res) => {
   const notificationText = req.body.text || "Open the notification to see it.";
-  const notificationLink = req.body.link || "/";
+  const notificationUrl = req.body.url || "/";
 
-  console.log(`New notification: "${notificationText}", "${notificationLink}"`);
+  console.log(`New notification: "${notificationText}", "${notificationUrl}"`);
 
   const payload = JSON.stringify({
     title: "New image!",
     body: notificationText,
-    url: notificationLink,
+    url: notificationUrl,
   });
 
   const subscriptions = loadSubscriptions();

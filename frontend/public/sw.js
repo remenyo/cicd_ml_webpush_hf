@@ -18,7 +18,8 @@ self.addEventListener("notificationclick", (event) => {
   console.log("sw: notificationclick", event);
   event.notification.close();
   const urlToOpen = event.notification.data.url;
-  event.waitUntil(clients.openWindow(urlToOpen));
+  // https://developer.mozilla.org/en-US/docs/Web/API/Clients/openWindow
+  event.waitUntil(clients.openWindow(`${self.location.origin}${urlToOpen}`));
 });
 
 self.addEventListener("install", (event) => {

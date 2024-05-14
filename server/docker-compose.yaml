@@ -5,6 +5,7 @@ networks:
 
 services:
   proxy:
+    restart: always
     container_name: proxy
     image: ghcr.io/remenyo/proxy_cicdhf
     command: node index.mjs --port 80
@@ -18,7 +19,9 @@ services:
       - gateway-blue
       - gateway-green
 
+  # Blue Environment Services
   gateway-blue:
+    restart: always
     container_name: gateway-blue
     image: ghcr.io/remenyo/gateway_cicdhf:blue
     command: node index.mjs --port 3000 --fileStoreURL http://file-store-blue:3000 --webpageHostURL http://webpage-host-blue:3000 --subscriptionURL http://subscription-handler-blue:3000
@@ -28,18 +31,8 @@ services:
       - file-store-blue
       - webpage-host-blue
 
-  gateway-green:
-    container_name: gateway-green
-    image: ghcr.io/remenyo/gateway_cicdhf:green
-    command: node index.mjs --port 3000 --fileStoreURL http://file-store-green:3000 --webpageHostURL http://webpage-host-green:3000 --subscriptionURL http://subscription-handler-green:3000
-    networks:
-      - backend-network
-    depends_on:
-      - file-store-green
-      - webpage-host-green
-
-  # Blue Environment Services
   webpage-host-blue:
+    restart: always
     container_name: webpage-host-blue
     image: ghcr.io/remenyo/webpage-host_cicdhf:blue
     networks:
@@ -48,6 +41,7 @@ services:
       - file-store-blue
 
   file-store-blue:
+    restart: always
     container_name: file-store-blue
     image: ghcr.io/remenyo/file-store_cicdhf:blue
     command: node index.mjs --imageProcessorURL http://image-processor-blue:3000 --subscriptionURL http://subscription-handler-blue:3000
@@ -60,12 +54,14 @@ services:
       - subscription-handler-blue
 
   image-processor-blue:
+    restart: always
     container_name: image-processor-blue
     image: ghcr.io/remenyo/image-processor_cicdhf:blue
     networks:
       - backend-network
 
   subscription-handler-blue:
+    restart: always
     container_name: subscription-handler-blue
     image: ghcr.io/remenyo/subscription-handler_cicdhf:blue
     volumes:
@@ -75,7 +71,19 @@ services:
       - backend-network
 
   # Green Environment Services (identical to blue, but with different tags)
+  gateway-green:
+    restart: always
+    container_name: gateway-green
+    image: ghcr.io/remenyo/gateway_cicdhf:green
+    command: node index.mjs --port 3000 --fileStoreURL http://file-store-green:3000 --webpageHostURL http://webpage-host-green:3000 --subscriptionURL http://subscription-handler-green:3000
+    networks:
+      - backend-network
+    depends_on:
+      - file-store-green
+      - webpage-host-green
+
   webpage-host-green:
+    restart: always
     container_name: webpage-host-green
     image: ghcr.io/remenyo/webpage-host_cicdhf:green
     networks:
@@ -84,6 +92,7 @@ services:
       - file-store-green
 
   file-store-green:
+    restart: always
     container_name: file-store-green
     image: ghcr.io/remenyo/file-store_cicdhf:green
     command: node index.mjs --imageProcessorURL http://image-processor-green:3000 --subscriptionURL http://subscription-handler-green:3000
@@ -96,12 +105,14 @@ services:
       - subscription-handler-green
 
   image-processor-green:
+    restart: always
     container_name: image-processor-green
     image: ghcr.io/remenyo/image-processor_cicdhf:green
     networks:
       - backend-network
 
   subscription-handler-green:
+    restart: always
     container_name: subscription-handler-green
     image: ghcr.io/remenyo/subscription-handler_cicdhf:green
     volumes:

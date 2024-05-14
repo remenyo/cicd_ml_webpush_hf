@@ -78,7 +78,7 @@ if (checkHealth(currentGateway)) {
 
 // Health check loop
 setInterval(async () => {
-	const desiredGateway = await getDesiredGateway();
+	const desiredGateway = getDesiredGateway();
 	const isCurrentHealthy = await checkHealth(currentGateway);
 
 	if (desiredGateway === currentGateway) {

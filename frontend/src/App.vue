@@ -171,6 +171,8 @@ const uploadImage = async () => {
 // prettier-ignore
 const publicKey = "< placeholder, see github action's 'Update publicKey in App.vue' task. >";
 
+// this is also called VAPID public key
+
 // Web-Push
 // Public base64 to Uint src: https://gist.github.com/Klerith/80abd742d726dd587f4bd5d6a0ab26b6
 function urlBase64ToUint8Array(base64String) {

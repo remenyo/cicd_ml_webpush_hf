@@ -38,35 +38,35 @@ Ez a feladat az alábbi részekból áll:
 
 Ez a dokumentum meghatározza a webszolgáltatás fejlesztése során használt architektúrális komponenseket, technológiákat és folyamatokat.
 
-toc::[]
-
 // pagebreak
 <<<
+
+toc::[]
+
 
 === 1. Felhasználói felület (UI)
 
 * **Technológia**: HTML+CSS+JS
-  Megjegyzés: Várhatóan nem lesz szükség reaktivitásra, de ha fejlesztés során kiderül hogy mégis, akkor a Vue3 JS keretrendszer lesz alkalmazva.
+  "Single Page Web application", Vue3 JS keretrendszert alkalmazva.
 * **Funkcionalitás**:
   ** Feltöltőoldal biztosítása a felhasználók számára a képek és a hozzájuk tartozó leírásokkal.
   ** Egy adott feltöltés megtekintése, ahol látható az eredeti és a feldolgozott kép (ahol az észlelt autók be vannkak keretezve), emellett a keretek száma és a felhasználói leírás is elolvasható.
-  ** Lehetővé teszi a felhasználók számára az értesítésekre való feliratkozást egy egyszerű űrlapon keresztül. (Várhatóan nem kell megadni semmit, csak egy gomb lesz.)
+  ** Lehetővé teszi a felhasználók számára az értesítésekre való feliratkozást egy egyszerű űrlapon keresztül. (Nem kell megadni semmit, csak egy gomb.)
 
 === 2. Képek és leírás tárolása (DB)
 
 * **Technológia**: Fájlrendszer
-  Megjegyzés: Több folyamat is hozzá fog férni egy fájlhoz, azonban egy fájlt csak egy folyamat fog írni valaha.
+  Megjegyzés: Több folyamat is hozzá fog férni egy fájlhoz, azonban egy fájlt csak egy folyamat fog írni valaha,így nem szükséges a zárak alkalmazása.
 * **Funkcionalitás**: Egyszerű fájl írás és olvasás funkcionalitás a követelmény.
   ** Eredeti képek tárolása egy mappában
-  ** Módosíott képek tárolása (egy másik mappában azonos névvel mint az eredeti kép.)
-  ** Leírás tárolása (egy másik mappában azonos névvel mint az eredeti kép.)
-  ** (Ha ezt a felsimerő modell igényli, feltöltés során a kép egységes méretre és formátumra alakítása.)
+  ** Módosíott képek tárolása (azonos névvel mint az eredeti kép + prefix.)
+  ** Leírás tárolása (azonos névvel mint az eredeti kép + másik prefix)
 
 === 3. Objektumfelismerés képeken (ML)
 
 * **Technológia**: OpenCV objektumfelismerő modell
 * **Funkcionalitás**:
-  ** Képek nevének fogadása http apin keresztül
+  ** Képek nevének fogadása http API-n keresztül
   ** Képek beolvasása fájlrendszerből
   ** Képeken autó alakú objektumok bekeretezése, opcionálisan címkézése
   ** "Keretezett" képek mentése fájlrendszerbe.
@@ -101,38 +101,58 @@ A frontend egy VueJS 3 single page web application. Az SPA csak annyit jelent ho
 * A `/`-n elérhető a feltöltés és a feliratkozás funckció,
 * A `/image/{id}`-n pedig a feltöltött kép leírással és a detekció eredménye látható.
 
-A kiszolgáló egy egyszerű NodeJS Express szerver (webpage-host backend service) ami kiszolgálja az index.html-t ha nem találja meg a fájlt amit kért a felhasználó (Single Page Application)
+A kiszolgáló (`web-hsot` konténer) egy egyszerű NodeJS Express szerver (webpage-host backend service) ami kiszolgálja az index.html-t ha nem találja meg a fájlt amit kért a felhasználó (Single Page Application)
 
 === 2. Backend
 
-A backend az alábbi részekből áll:
+A backend az alábbi részekből (konténerekből) áll:
 
-* proxy: a gatewayek között váltó program
-* gateway: a weboldal és az alábbi szolgáltatások közötti közvetítő
+* proxy: a gatewayek között váltó program (A zero downtime release-hez.)
+* gateway: a böngésző és az alábbi szolgáltatások közötti közvetítő:
 * webpage-host: weboldalt kiszolgáló program
 * file-store: képek mentése és letöltése
 * subscription-handler: feliratkozást kezelő rendszer
 * image-processor: autó alakú objektumok felismerése
 
+* A `proxy` csak a `gateway`-el kommunikál.
+* A `gateway` ismeri a `webpage-host`, `file-store` és `subscription-handler`-t, mert ezeket éri el a böngésző közvetlenül a különböző path-eken.
+* A `file-store` ismeri a `subscription-handler`-t és az `image-processor`-t is, előbbit az értesítés küldése miatt, az utóbbit a képfeldolgozás indításához.
 
+Minden szolgáltatás a felhasználó számára a 80-as porton érhető el a gateway "aggregációja" (máshogy fogalmazva http proxy funkcionalitása) okán. (Egyedül a proxy érhető el kívülről, a 80-as porton keresztül.)
 
-Minden szolgáltatás a 3000-es porton érhető el alapértelmezetten, de a működés során minimum két port szükséges, mert nem a "backend" szolgálja ki a frontendet jelenleg.
+==== Értesítés küldés
 
-A szolgaáltatás a 80-as porton érhető el ki.
+A web-push szolgáltatás egy nyilvános "VAPID" kulccsal rendelkezik, amit a weboldal service workere (annak a `pushManager` objektuma) megkap. Ha a felhasználó elfogadja az értesítések küldését, és a service worker regisztrációja is sikerült, a pushManager visszaad egy egyedi kulcsot és egy url-t amit a szerver használhat majd üzenet küldésre:
+
+[json]
+....
+{
+  "endpoint": "https://fcm.googleapis.com/fcm/send/cCX...70m0:A<--------PÉLDA------->vMx6kiyU69_0aspj8dY1J0<--------PÉLDA------->pHEcwFuIRb9vAEHHmhA5V7RP-p",
+  "expirationTime": null,
+  "keys": {
+    "p256dh": "BIv4RtfD8_jbxNp<--------PÉLDA------->ZicuqK1rbCQav6nsII",
+    "auth": "Q8P2BcQ<--------PÉLDA------->Xe2PpTBTX6g"
+  }
+}
+....
+
+A szerver ezt és a privát kulcsát használva tud biztonságosan klienseknek küldeni üzeneteket.
 
 === 3. Docker
 
-A Docker Compose kezeli a konténerizált alkalmazás telepítését.
+A Docker Compose kezeli a konténerizált alkalmazásások telepítését és futattását.
 A docker-compose.yaml fájl definiálja a szolgáltatásokat (konténereket) és azok konfigurációját.
 Az image-ket a GHCR-ről szedi le, annak hatására hogy a Github Actions SSH-n szól a szervernek, hogy pullolja.
 
-A blue-green telepítés stratégiát alkalmazok a zökkenőmentes frissítések és a gyors visszaállítás érdekében:
+A blue-green stratégiát alkalmazok a zökkenőmentes frissítések és a gyors visszaállítás érdekében:
 
-* Két Környezet: Két különálló környezet: "blue" és "green"
+* Két különálló, párhuzamosan futó környezet: "blue" és "green"
 * Proxy: A proxy szerver kezeli a bejövő forgalmat és irányítja azt az aktuálisan aktív környezetbe.
 * Healthcheck: A proxy folyamatosan figyeli mindkét környezet állapotát, és automatikusan átvált a másik környezetre, ha az aktív környezet meghibásodik.
 
-=== 3. CI/CD rendszer
+=== 4. CI/CD rendszer
+
+GitHub actions-t használok, docker build folyamatok futnak benne, majd be-SSH-zva a szerverre, frissíti a konfigurációs fájlokat, végül újraindíja a megfelelő konténereket.
 
 Források:
 
@@ -146,6 +166,14 @@ include::cicd_sequencediagram.mermaid[]
 {counter:figure}. {figure-caption} CI/CD folyamat várható szekvenciadiája
 
 
-A renderer dockerfile asciidoctort használ. Ezt a technológiát alkalmaztam a szakdolgozatomban, és az a tervem hogy így fogom megírni a diplomatervem is.
+A `documentation` dockerfile asciidoctort használ. Ezt a technológiát alkalmaztam a szakdolgozatomban, és az a tervem hogy így fogom megírni a diplomatervem is.
 
 Egy yaml (documentation.yaml) kirendereli ezt a dokumentumot és release-be teszi a PDF-et, a másik (docker.yaml) pedig megépíti az imageket, feltölti őket a ghcr-re, majd frissíti a szerveren a docker-compose.yaml-t.
+
+=== 5. Skálázhatóság:
+
+A blue és green szolgáltatások egy eszközön kell hogy fussanak egészen addig amíg a fájlrendszer közöttük nincs szinkronizálva. Ha feltesszük hogy egyszerre csak egy dolgoz fel kéréseket, továbbra sem kellenek lockok.
+
+Egy adott konténerből is több példány futhat elméletileg, mert az összes egy közös fájlrendszerbe dolgozik, egy fájlt csak egy folyamat ír, és azok amik támaszkodnak rá egy kivétellel mind várnak az írás végéig.
+
+(Az egy kivétel a kép lekérdezés, az bármikor elindulhat és félkész fájlokat szerezhet meg elméletileg. Nincs Lockfile.)

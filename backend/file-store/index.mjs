@@ -166,7 +166,7 @@ app.post("/", (req, res) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            text: "Someone uploaded a new image.",
+            text: `New image: ${uuid}`,
             url: `/image/${uuid}`,
           }),
         })
