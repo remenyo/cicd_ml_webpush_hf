@@ -162,7 +162,7 @@ Mi látszik itt?
 * végig monitorozza a futó és a következő stacket.
 * az időzítő végén átvált a green-re a proxy, és onnantól a blue-val bármi történhet.
 
-image::proxy_auto_switch_on_error.png[title="Blue Green stack váltás" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+image::proxy_auto_switch_on_error.png[title="Blue Green stack váltás hiba esetén" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
 
 Mi látszik itt?
 
@@ -176,7 +176,12 @@ Mi látszik itt?
 
 === 4. CI/CD rendszer
 
-GitHub actions-t használok, docker build folyamatok futnak benne, majd be-SSH-zva a szerverre, frissíti a konfigurációs fájlokat, végül újraindíja a megfelelő konténereket.
+GitHub actions-t használok, docker build folyamatok futnak benne, majd be-SSH-zva a szerverre, frissíti a konfigurációs fájlokat (docker-compose.yaml, VAPID kulcs, aktuális "színű" stack, illetve a szükséges mappák. Van docker install script is, így egy teljesen üres gépről is be lehet üzemelni elsőre a rendszert.), végül újraindíja a megfelelő konténereket. "Mátrixban" buildelem a konténereket hogy párhuzamosan, így gyorsabban legyen kész a folyamat.
+
+A titkok environment secrets-ben vannak tárolva (pl az ssh cím, port, user és jelszó, továbbá a VAPID nyilvános + privát kulcs.)
+
+image::matrix.png[title="Build folyamat" caption="{counter2:figure}{counter:figure}. {figure-caption} "]
+
 
 Források:
 

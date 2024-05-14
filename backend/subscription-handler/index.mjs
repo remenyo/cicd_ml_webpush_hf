@@ -128,13 +128,13 @@ app.post("/notify", (req, res) => {
       .sendNotification(subscription.subscription, payload)
       .catch((error) => {
         console.error("Error sending notification:", error);
-        if (err.statusCode === 404 || err.statusCode === 410) {
+        if (error.statusCode === 404 || error.statusCode === 410) {
           const filepath = path.join(
             subscriptionsFilePath,
             subscription.filename
           );
           fs.unlinkSync(filepath);
-          console.log("Subscription has expired or is no longer valid: ", err);
+          console.log("Subscription has expired or is no longer valid: ", error);
         }
       });
   });
